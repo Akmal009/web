@@ -10,30 +10,3 @@ h1 {
   color: rgb(255, 0, 0);
 }
 
-.hidden {
-  display: none;
-}
-
-/* Центрирование загрузочного экрана */
-.loader-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
-
-/* Стиль анимированного спиннера */
-.spinner {
-  width: 60px;
-  height: 60px;
-  border: 8px solid #eee;
-  border-top: 8px solid #4caf50;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-/* Анимация кручения */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
