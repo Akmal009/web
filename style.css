@@ -8,6 +8,15 @@ body {
   height: 100vh;
 }
 
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: none; /* показываем только если есть фото */
+  border: 2px solid #ffaa00; /* нужная рамка */
+  background-color: #0e0c1f; /* фон за фото */
+}
 .container {
   padding: 20px;
   flex: 1;
