@@ -139,6 +139,7 @@ footer {
 
 #mining-icon:active {
   transform: scale(0.95);
+  all: unset;
 }
 .floating-plus {
   position: absolute;
