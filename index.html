@@ -10,23 +10,22 @@
 <body>
   <div class="container" id="main-screen">
     <div class="header" onclick="navigateTo('profile')">
-      <img id="user-avatar" class="avatar" src="" alt="Avatar" />
+      <img id="user-avatar" class="avatar bordered" src="" alt="Avatar" />
     </div>
-
     <div class="logo">A</div>
     <button class="about-btn bordered" onclick="openTangaInfo()">Что такое Akmal Click?</button>
+    <div class="content-section">
+      <div class="balance-block">
+        <div class="balance-title">Общий баланс</div>
+        <div class="balance-value" id="balance-value">0</div>
+      </div>
 
-    <div class="balance-block">
-      <div class="balance-title">Общий баланс</div>
-      <div class="balance-value" id="balance-value">0</div>
-    </div>
-
-    <div class="actions">
-      <button onclick="navigateTo('tasks')">Незавершённые задачи</button>
-      <button onclick="navigateTo('mining')">Майнинг</button>
+      <div class="actions">
+        <button onclick="navigateTo('tasks')">Незавершённые задачи</button>
+        <button onclick="navigateTo('mining')">Майнинг</button>
+      </div>
     </div>
   </div>
-
   <div class="container" id="mining-screen" style="display:none">
     <h2>Майнинг</h2>
   </div>
