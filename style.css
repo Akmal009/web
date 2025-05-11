@@ -123,6 +123,7 @@ footer {
 }
 
 #mining-icon {
+  all: unset; /* сбрасывает все стили браузера */
   width: 300px;
   height: 300px;
   background: #FFD42B;
@@ -134,10 +135,6 @@ footer {
   cursor: pointer;
   user-select: none;
   transition: transform 0.1s ease;
-  outline: none;
-}
-#mining-icon:focus {
-  outline: none;
 }
 
 #mining-icon:active {
