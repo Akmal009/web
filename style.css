@@ -22,6 +22,14 @@ body {
   opacity: 0.8;
 }
 
+.bordered {
+  border: 2px solid #0e0c1f;
+  background-color: #0e0c1f;
+  color: white;
+  padding: 4px;
+  border-radius: 8px;
+}
+
 .logo {
   width: 100px;
   height: 100px;
@@ -36,12 +44,11 @@ body {
 }
 
 .about-btn {
-  background: none;
-  border: none;
-  color: #aaa;
-  text-align: center;
   display: block;
-  margin: 0 auto 20px auto;
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 16px;
   cursor: pointer;
 }
 
