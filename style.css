@@ -123,7 +123,6 @@ footer {
 }
 
 #mining-icon {
-  -webkit-tap-highlight-color: transparent;
   width: 300px;
   height: 300px;
   background: #FFD42B;
@@ -135,6 +134,13 @@ footer {
   cursor: pointer;
   user-select: none;
   transition: transform 0.1s ease;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#mining-icon:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 #mining-icon:active {
