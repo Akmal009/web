@@ -3,19 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tanga Mini App</title>
+  <title>Akmal</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="container" id="main-screen">
-    <div class="header">
-      <div class="user-id" id="user-id">Загрузка ID...</div>
-      <img id="user-avatar" class="avatar" src="" alt="Avatar" style="display:none" />
+    <div class="header" onclick="navigateTo('profile')">
+      <img id="user-avatar" class="avatar bordered" src="" alt="Avatar" />
     </div>
 
-    <div class="logo">T</div>
-    <button class="about-btn" onclick="openTangaInfo()">Что такое Танга?</button>
+    <div class="logo">A</div>
+    <button class="about-btn bordered" onclick="openTangaInfo()">Что такое Akmal Click?</button>
 
     <div class="balance-block">
       <div class="balance-title">Общий баланс</div>
@@ -30,18 +29,22 @@
 
   <div class="container" id="mining-screen" style="display:none">
     <h2>Майнинг</h2>
-    <!-- Здесь позже появится функционал майнинга -->
   </div>
 
   <div class="container" id="tasks-screen" style="display:none">
     <h2>Незавершённые задачи</h2>
-    <!-- Здесь позже появятся задачи -->
+  </div>
+
+  <div class="container" id="profile-screen" style="display:none">
+    <h2>Профиль</h2>
+    <!-- Здесь позже появится профиль пользователя -->
   </div>
 
   <div class="nav">
     <button id="nav-home" class="active" onclick="showScreen('main')">Главная</button>
     <button id="nav-tasks" onclick="showScreen('tasks')">Задания</button>
     <button id="nav-mining" onclick="showScreen('mining')">Майнинг</button>
+    <button id="nav-profile" onclick="showScreen('profile')">Профиль</button>
   </div>
 
   <script src="app.js"></script>
