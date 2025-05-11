@@ -125,6 +125,7 @@ footer {
 #mining-icon {
   width: 300px;
   height: 300px;
+  font-size: 64px;
   background: #FFD42B;
   border-radius: 50%;
   font-size: 48px;
