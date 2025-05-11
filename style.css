@@ -1,16 +1,25 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background-color: #0e0c1f;
+  background: linear-gradient(-45deg, #0e0c1f, #1a1830, #292447, #0e0c1f);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
   color: white;
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
 
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
 .avatar {
-  width: 38px;
-  height: 38px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
   display: none; /* показываем только если есть фото */
@@ -21,6 +30,8 @@ body {
   padding: 20px;
   flex: 1;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
@@ -32,8 +43,8 @@ body {
 }
 
 .bordered {
-  border: 2px solid #0e0c1f;
-  background-color: #0e0c1f;
+  border: none;
+  background-color: transparent;
   color: white;
   padding: 4px;
   border-radius: 8px;
@@ -54,11 +65,19 @@ body {
 
 .about-btn {
   display: block;
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
+  width: auto;
+  padding: 1px;
+  margin: 10px auto;
   font-size: 16px;
   cursor: pointer;
+}
+
+.content-section {
+  background-color: #000000;
+  padding: 20px;
+  border-radius: 20px;
+  margin-left: -20px;
+  margin-right: -20px;
 }
 
 .balance-block {
@@ -79,7 +98,7 @@ body {
 
 .actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 12px;
   margin-bottom: 20px;
 }
