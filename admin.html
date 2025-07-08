@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Админ-панель</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #1e1e1e;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .user-info {
+            margin-top: 30px;
+            font-size: 1.2em;
+            background: #333;
+            padding: 20px;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h2>🔐 Добро пожаловать в админ-панель</h2>
+    <div class="user-info" id="userInfo">Загрузка данных...</div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        const user = tg.initDataUnsafe.user;
+        if (user) {
+            document.getElementById('userInfo').innerHTML = `
+                👤 <b>${user.first_name}</b><br>
+                🆔 ID: <code>${user.id}</code><br>
+                <i>Теперь бот может писать вам в ЛС!</i>
+            `;
+        } else {
+            document.getElementById('userInfo').innerText = "Не удалось получить данные пользователя.";
+        }
+    </script>
+</body>
+</html>
