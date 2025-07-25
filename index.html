@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f5f5;
             height: 100vh;
             overflow: hidden;
             position: relative;
@@ -27,15 +27,48 @@
             background: #ffffff;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .telegram-header {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            height: 56px;
+            background: #212121;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            z-index: 1000;
+        }
+
+        .header-close {
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 16px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .header-menu {
+            font-size: 24px;
+            cursor: pointer;
         }
 
         .screen {
             position: absolute;
-            top: 0;
+            top: 56px;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: calc(100vh - 56px);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -44,6 +77,7 @@
             opacity: 0;
             transform: translateX(100%);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #ffffff;
         }
 
         .screen.active {
@@ -59,33 +93,35 @@
         .splash-screen {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
+            top: 0;
+            height: 100vh;
         }
 
         .logo {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             background: rgba(255,255,255,0.2);
-            border-radius: 30px;
+            border-radius: 25px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 48px;
+            font-size: 40px;
             font-weight: bold;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             animation: logoFloat 2s ease-in-out infinite alternate;
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255,255,255,0.3);
         }
 
         @keyframes logoFloat {
-            from { transform: translateY(-10px); }
-            to { transform: translateY(10px); }
+            from { transform: translateY(-8px); }
+            to { transform: translateY(8px); }
         }
 
         .app-title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             opacity: 0;
             animation: fadeInUp 1s ease-out 0.5s forwards;
         }
@@ -99,7 +135,7 @@
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -109,13 +145,13 @@
 
         .loading-dots {
             display: flex;
-            gap: 8px;
-            margin-top: 40px;
+            gap: 6px;
+            margin-top: 32px;
         }
 
         .dot {
-            width: 12px;
-            height: 12px;
+            width: 8px;
+            height: 8px;
             background: rgba(255,255,255,0.7);
             border-radius: 50%;
             animation: loadingBounce 1.4s ease-in-out infinite both;
@@ -136,21 +172,21 @@
         }
 
         .screen-title {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 600;
             color: #2c3e50;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             opacity: 0;
             animation: slideInDown 0.6s ease-out 0.2s forwards;
         }
 
         .screen-subtitle {
-            font-size: 16px;
-            color: #7f8c8d;
+            font-size: 15px;
+            color: #8e8e93;
             text-align: center;
-            margin-bottom: 40px;
-            line-height: 1.5;
+            margin-bottom: 32px;
+            line-height: 1.4;
             opacity: 0;
             animation: slideInDown 0.6s ease-out 0.4s forwards;
         }
@@ -158,7 +194,7 @@
         @keyframes slideInDown {
             from {
                 opacity: 0;
-                transform: translateY(-30px);
+                transform: translateY(-20px);
             }
             to {
                 opacity: 1;
@@ -167,7 +203,7 @@
         }
 
         .input-group {
-            margin-bottom: 25px;
+            margin-bottom: 24px;
             opacity: 0;
             animation: slideInUp 0.6s ease-out 0.6s forwards;
         }
@@ -175,37 +211,36 @@
         .input-wrapper {
             position: relative;
             overflow: hidden;
-            border-radius: 16px;
-            background: #f8f9fa;
-            border: 2px solid transparent;
+            border-radius: 12px;
+            background: #f2f2f7;
+            border: 1px solid transparent;
             transition: all 0.3s ease;
         }
 
         .input-wrapper:focus-within {
-            border-color: #4facfe;
+            border-color: #007aff;
             background: #ffffff;
-            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.15);
-            transform: translateY(-2px);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
         }
 
         .input-field {
             width: 100%;
-            padding: 18px 20px;
+            padding: 16px;
             border: none;
             background: transparent;
             font-size: 16px;
-            color: #2c3e50;
+            color: #000000;
             outline: none;
         }
 
         .input-field::placeholder {
-            color: #bdc3c7;
+            color: #8e8e93;
         }
 
         @keyframes slideInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -215,43 +250,27 @@
 
         .btn-primary {
             width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 16px;
+            background: #007aff;
             color: white;
             border: none;
-            border-radius: 16px;
-            font-size: 18px;
+            border-radius: 12px;
+            font-size: 17px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             opacity: 0;
             animation: slideInUp 0.6s ease-out 0.8s forwards;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-primary:hover::before {
-            left: 100%;
         }
 
         .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(79, 172, 254, 0.3);
+            background: #0056b3;
+            transform: translateY(-1px);
         }
 
         .btn-primary:active {
-            transform: translateY(-1px);
+            transform: translateY(0);
+            background: #004494;
         }
 
         .btn-primary:disabled {
@@ -263,270 +282,292 @@
         /* OTP Input */
         .otp-container {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
 
         .otp-input {
-            width: 50px;
-            height: 60px;
-            border: 2px solid #e1e8ed;
+            width: 45px;
+            height: 55px;
+            border: 2px solid #e5e5ea;
             border-radius: 12px;
             text-align: center;
             font-size: 24px;
             font-weight: 600;
-            color: #2c3e50;
-            background: #f8f9fa;
-            transition: all 0.3s ease;
+            color: #000000;
+            background: #ffffff;
+            transition: all 0.2s ease;
         }
 
         .otp-input:focus {
-            border-color: #4facfe;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
-            transform: scale(1.05);
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
         }
 
         .otp-input.filled {
-            border-color: #27ae60;
-            background: #d5f4e6;
-            animation: otpPulse 0.3s ease-out;
+            border-color: #34c759;
+            background: #f0fff4;
+            animation: otpPulse 0.2s ease-out;
         }
 
         @keyframes otpPulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
 
         /* Timer */
         .timer-container {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 24px;
         }
 
         .timer {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
-            color: #e74c3c;
-            margin-bottom: 10px;
+            color: #ff3b30;
+            margin-bottom: 8px;
         }
 
         .resend-btn {
             background: none;
             border: none;
-            color: #4facfe;
+            color: #007aff;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            text-decoration: underline;
-            transition: color 0.3s ease;
+            transition: opacity 0.2s ease;
         }
 
         .resend-btn:hover {
-            color: #2980b9;
+            opacity: 0.7;
         }
 
         .resend-btn:disabled {
-            color: #bdc3c7;
+            color: #8e8e93;
             cursor: not-allowed;
-            text-decoration: none;
         }
 
-        /* PIN Input */
-        .pin-container {
+        /* PIN Screen */
+        .pin-screen-container {
             display: flex;
-            gap: 20px;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .pin-dots-container {
+            display: flex;
+            gap: 16px;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 48px;
         }
 
         .pin-dot {
-            width: 20px;
-            height: 20px;
-            border: 3px solid #e1e8ed;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e5e5ea;
             border-radius: 50%;
             background: transparent;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .pin-dot.filled {
-            background: #4facfe;
-            border-color: #4facfe;
-            animation: pinFill 0.3s ease-out;
+            background: #007aff;
+            border-color: #007aff;
+            animation: pinFill 0.2s ease-out;
         }
 
         @keyframes pinFill {
             0% { transform: scale(0.8); }
-            50% { transform: scale(1.2); }
+            50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
 
         .pin-keypad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            max-width: 300px;
+            gap: 24px;
             width: 100%;
+            max-width: 250px;
         }
 
         .pin-key {
-            width: 70px;
-            height: 70px;
+            width: 72px;
+            height: 72px;
             border: none;
             border-radius: 50%;
-            background: #f8f9fa;
-            font-size: 24px;
-            font-weight: 600;
-            color: #2c3e50;
+            background: #f2f2f7;
+            font-size: 32px;
+            font-weight: 400;
+            color: #000000;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             display: flex;
             align-items: center;
             justify-content: center;
+            user-select: none;
         }
 
         .pin-key:hover {
-            background: #e9ecef;
-            transform: scale(1.05);
+            background: #e5e5ea;
+            transform: scale(1.02);
         }
 
         .pin-key:active {
             transform: scale(0.95);
-            background: #4facfe;
-            color: white;
+            background: #d1d1d6;
         }
 
         .pin-key.delete {
-            background: #e74c3c;
+            background: #ff3b30;
             color: white;
+            font-size: 20px;
         }
 
         .pin-key.delete:hover {
-            background: #c0392b;
+            background: #d70015;
+        }
+
+        .pin-key.empty {
+            background: transparent;
+            cursor: default;
+        }
+
+        .pin-key.empty:hover {
+            background: transparent;
+            transform: none;
         }
 
         /* Home Screen */
-        .home-header {
+        .home-container {
             width: 100%;
+            height: 100%;
+            padding: 24px 20px;
+        }
+
+        .home-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
         }
 
         .welcome-text {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 10px;
+            color: #000000;
+            margin-bottom: 8px;
+        }
+
+        .user-phone {
+            font-size: 16px;
+            color: #8e8e93;
         }
 
         .balance-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 20px;
-            padding: 30px;
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+            border-radius: 16px;
+            padding: 24px;
             color: white;
             text-align: center;
-            margin-bottom: 30px;
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
-            animation: balanceFloat 3s ease-in-out infinite alternate;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(0, 122, 255, 0.2);
+            animation: balanceFloat 4s ease-in-out infinite alternate;
         }
 
         @keyframes balanceFloat {
-            from { transform: translateY(-5px); }
-            to { transform: translateY(5px); }
+            from { transform: translateY(-3px); }
+            to { transform: translateY(3px); }
         }
 
         .balance-label {
-            font-size: 16px;
+            font-size: 15px;
             opacity: 0.8;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .balance-amount {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 700;
         }
 
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 12px;
         }
 
         .action-btn {
-            padding: 20px;
-            background: white;
-            border: 2px solid #e1e8ed;
-            border-radius: 16px;
+            padding: 20px 16px;
+            background: #f2f2f7;
+            border: none;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             text-align: center;
         }
 
         .action-btn:hover {
-            border-color: #4facfe;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            background: #e5e5ea;
+            transform: translateY(-2px);
         }
 
         .action-icon {
             font-size: 24px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .action-text {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2c3e50;
+            font-size: 15px;
+            font-weight: 500;
+            color: #000000;
         }
 
-        /* Success Animation */
+        /* Success/Error Messages */
         .success-check {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: #27ae60;
+            background: #34c759;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 20px auto;
-            animation: successPop 0.6s ease-out;
+            margin: 16px auto;
+            animation: successPop 0.5s ease-out;
         }
 
         .success-check::after {
             content: '✓';
             color: white;
-            font-size: 40px;
+            font-size: 28px;
             font-weight: bold;
         }
 
         @keyframes successPop {
             0% { transform: scale(0); }
-            50% { transform: scale(1.2); }
+            50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
 
-        /* Error Animation */
         .error-shake {
-            animation: shake 0.5s ease-in-out;
+            animation: shake 0.4s ease-in-out;
         }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
         }
 
-        /* Loading Animation */
         .loading {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4facfe;
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007aff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            margin: 16px auto;
         }
 
         @keyframes spin {
@@ -534,34 +575,54 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Database Status */
+        .db-status {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .db-status.show {
+            opacity: 1;
+        }
+
         /* Responsive */
         @media (max-width: 480px) {
-            .app-container {
-                max-width: 100%;
-            }
-            
             .otp-container {
-                gap: 10px;
+                gap: 8px;
             }
             
             .otp-input {
-                width: 45px;
-                height: 55px;
+                width: 40px;
+                height: 50px;
+                font-size: 20px;
             }
             
-            .pin-container {
-                gap: 15px;
+            .pin-keypad {
+                gap: 20px;
+                max-width: 220px;
             }
             
             .pin-key {
-                width: 60px;
-                height: 60px;
+                width: 65px;
+                height: 65px;
+                font-size: 28px;
             }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
+
         <!-- Splash Screen -->
         <div class="screen splash-screen active" id="splash">
             <div class="logo">H</div>
@@ -622,11 +683,11 @@
 
         <!-- Set PIN -->
         <div class="screen" id="set-pin">
-            <div class="form-container">
+            <div class="pin-screen-container">
                 <h2 class="screen-title">Создайте ПИН-код</h2>
                 <p class="screen-subtitle">Создайте 4-значный ПИН-код для безопасности</p>
                 
-                <div class="pin-container">
+                <div class="pin-dots-container">
                     <div class="pin-dot" data-index="0"></div>
                     <div class="pin-dot" data-index="1"></div>
                     <div class="pin-dot" data-index="2"></div>
@@ -643,7 +704,7 @@
                     <button class="pin-key" onclick="addPinDigit('7')">7</button>
                     <button class="pin-key" onclick="addPinDigit('8')">8</button>
                     <button class="pin-key" onclick="addPinDigit('9')">9</button>
-                    <button class="pin-key"></button>
+                    <button class="pin-key empty"></button>
                     <button class="pin-key" onclick="addPinDigit('0')">0</button>
                     <button class="pin-key delete" onclick="removePinDigit()">⌫</button>
                 </div>
@@ -652,11 +713,11 @@
 
         <!-- Login with PIN -->
         <div class="screen" id="login-pin">
-            <div class="form-container">
+            <div class="pin-screen-container">
                 <h2 class="screen-title">Введите ПИН-код</h2>
                 <p class="screen-subtitle">Введите ваш ПИН-код для входа</p>
                 
-                <div class="pin-container">
+                <div class="pin-dots-container">
                     <div class="pin-dot" data-index="0"></div>
                     <div class="pin-dot" data-index="1"></div>
                     <div class="pin-dot" data-index="2"></div>
@@ -673,7 +734,7 @@
                     <button class="pin-key" onclick="addLoginPinDigit('7')">7</button>
                     <button class="pin-key" onclick="addLoginPinDigit('8')">8</button>
                     <button class="pin-key" onclick="addLoginPinDigit('9')">9</button>
-                    <button class="pin-key"></button>
+                    <button class="pin-key empty"></button>
                     <button class="pin-key" onclick="addLoginPinDigit('0')">0</button>
                     <button class="pin-key delete" onclick="removeLoginPinDigit()">⌫</button>
                 </div>
@@ -682,52 +743,239 @@
 
         <!-- Home Screen -->
         <div class="screen" id="home">
-            <div class="home-header">
-                <h2 class="welcome-text">Добро пожаловать!</h2>
-            </div>
-            
-            <div class="balance-card">
-                <div class="balance-label">Ваш баланс</div>
-                <div class="balance-amount">150,000 сум</div>
-            </div>
-            
-            <div class="quick-actions">
-                <div class="action-btn">
-                    <div class="action-icon">💳</div>
-                    <div class="action-text">Пополнить</div>
+            <div class="home-container">
+                <div class="home-header">
+                    <h2 class="welcome-text">Добро пожаловать!</h2>
+                    <p class="user-phone" id="user-phone-display"></p>
                 </div>
-                <div class="action-btn">
-                    <div class="action-icon">📤</div>
-                    <div class="action-text">Перевести</div>
+                
+                <div class="balance-card">
+                    <div class="balance-label">Ваш баланс</div>
+                    <div class="balance-amount">150,000,000 сум</div>
                 </div>
-                <div class="action-btn">
-                    <div class="action-icon">📱</div>
-                    <div class="action-text">Оплатить</div>
-                </div>
-                <div class="action-btn">
-                    <div class="action-icon">📊</div>
-                    <div class="action-text">История</div>
+                
+                <div class="quick-actions">
+                    <button class="action-btn">
+                        <div class="action-icon">💳</div>
+                        <div class="action-text">Пополнить</div>
+                    </button>
+                    <button class="action-btn">
+                        <div class="action-icon">📤</div>
+                        <div class="action-text">Перевести</div>
+                    </button>
+                    <button class="action-btn">
+                        <div class="action-icon">📱</div>
+                        <div class="action-text">Оплатить</div>
+                    </button>
+                    <button class="action-btn">
+                        <div class="action-icon">📊</div>
+                        <div class="action-text">История</div>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Database Status -->
+    <div class="db-status" id="db-status"></div>
+
     <script>
+        // Database Management
+        class DatabaseManager {
+            constructor() {
+                this.dbName = 'hamyonpay_db';
+                this.version = 1;
+                this.db = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    // Simulate SQLite with IndexedDB for web environment
+                    const request = indexedDB.open(this.dbName, this.version);
+                    
+                    request.onerror = () => {
+                        console.error('Database error:', request.error);
+                        this.showStatus('Database error', 'error');
+                    };
+
+                    request.onsuccess = () => {
+                        this.db = request.result;
+                        this.showStatus('Database connected', 'success');
+                        this.loadUserData();
+                    };
+
+                    request.onupgradeneeded = (event) => {
+                        this.db = event.target.result;
+                        
+                        // Create users table
+                        if (!this.db.objectStoreNames.contains('users')) {
+                            const userStore = this.db.createObjectStore('users', { keyPath: 'phone' });
+                            userStore.createIndex('phone', 'phone', { unique: true });
+                        }
+
+                        // Create sessions table
+                        if (!this.db.objectStoreNames.contains('sessions')) {
+                            const sessionStore = this.db.createObjectStore('sessions', { keyPath: 'id' });
+                        }
+                    };
+                } catch (error) {
+                    console.error('Database initialization failed:', error);
+                    this.showStatus('Database init failed', 'error');
+                }
+            }
+
+            async saveUser(phone, pin) {
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['users'], 'readwrite');
+                    const store = transaction.objectStore('users');
+                    
+                    const userData = {
+                        phone: phone,
+                        pin: pin,
+                        createdAt: new Date().toISOString(),
+                        balance: 10000
+                    };
+
+                    const request = store.put(userData);
+                    
+                    request.onsuccess = () => {
+                        this.showStatus('User saved to database', 'success');
+                        resolve(userData);
+                    };
+                    
+                    request.onerror = () => {
+                        this.showStatus('Failed to save user', 'error');
+                        reject(request.error);
+                    };
+                });
+            }
+
+            async getUser(phone) {
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['users'], 'readonly');
+                    const store = transaction.objectStore('users');
+                    const request = store.get(phone);
+                    
+                    request.onsuccess = () => {
+                        resolve(request.result);
+                    };
+                    
+                    request.onerror = () => {
+                        reject(request.error);
+                    };
+                });
+            }
+
+            async saveSession(phone) {
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['sessions'], 'readwrite');
+                    const store = transaction.objectStore('sessions');
+                    
+                    const sessionData = {
+                        id: 'current',
+                        phone: phone,
+                        loginTime: new Date().toISOString(),
+                        lastActivity: new Date().toISOString()
+                    };
+
+                    const request = store.put(sessionData);
+                    
+                    request.onsuccess = () => {
+                        resolve(sessionData);
+                    };
+                    
+                    request.onerror = () => {
+                        reject(request.error);
+                    };
+                });
+            }
+
+            async getSession() {
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['sessions'], 'readonly');
+                    const store = transaction.objectStore('sessions');
+                    const request = store.get('current');
+                    
+                    request.onsuccess = () => {
+                        resolve(request.result);
+                    };
+                    
+                    request.onerror = () => {
+                        reject(request.error);
+                    };
+                });
+            }
+
+            async clearSession() {
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['sessions'], 'readwrite');
+                    const store = transaction.objectStore('sessions');
+                    const request = store.delete('current');
+                    
+                    request.onsuccess = () => {
+                        resolve();
+                    };
+                    
+                    request.onerror = () => {
+                        reject(request.error);
+                    };
+                });
+            }
+
+            async loadUserData() {
+                try {
+                    const session = await this.getSession();
+                    if (session) {
+                        const user = await this.getUser(session.phone);
+                        if (user) {
+                            // Check session timeout (2 minutes)
+                            const lastActivity = new Date(session.lastActivity);
+                            const now = new Date();
+                            const timeDiff = now - lastActivity;
+                            
+                            if (timeDiff > 120000) { // 2 minutes
+                                await this.clearSession();
+                                navigateToScreen('login-pin');
+                            } else {
+                                currentUser = user;
+                                navigateToScreen('home');
+                                document.getElementById('user-phone-display').textContent = user.phone;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to load user data:', error);
+                }
+            }
+
+            showStatus(message, type) {
+                const statusEl = document.getElementById('db-status');
+                statusEl.textContent = message;
+                statusEl.className = `db-status show ${type}`;
+                
+                setTimeout(() => {
+                    statusEl.classList.remove('show');
+                }, 3000);
+            }
+        }
+
         // App State
         let currentScreen = 'splash';
-        let userPin = '';
+        let currentUser = null;
         let tempPin = '';
         let loginPin = '';
         let otpTimer = 120;
         let timerInterval;
-        let inactivityTimer;
         let lastActivity = Date.now();
+        let db = new DatabaseManager();
 
         // Initialize App
         document.addEventListener('DOMContentLoaded', function() {
             // Auto-navigate from splash after 3 seconds
             setTimeout(() => {
-                navigateToScreen('phone-registration');
+                // Check if user exists in database
+                checkExistingUser();
             }, 3000);
 
             // Setup OTP inputs
@@ -739,6 +987,24 @@
             // Setup inactivity detection
             setupInactivityDetection();
         });
+
+        async function checkExistingUser() {
+            try {
+                const session = await db.getSession();
+                if (session) {
+                    const user = await db.getUser(session.phone);
+                    if (user) {
+                        currentUser = user;
+                        navigateToScreen('login-pin');
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.log('No existing session found');
+            }
+            
+            navigateToScreen('phone-registration');
+        }
 
         // Screen Navigation
         function navigateToScreen(screenId) {
@@ -814,7 +1080,7 @@
             }
         }
 
-        function sendOTP() {
+        async function sendOTP() {
             const phoneInput = document.getElementById('phone-input');
             const phone = phoneInput.value;
             
@@ -823,10 +1089,23 @@
                 return;
             }
             
+            // Check if user already exists
+            try {
+                const existingUser = await db.getUser(phone);
+                if (existingUser) {
+                    currentUser = existingUser;
+                    navigateToScreen('login-pin');
+                    return;
+                }
+            } catch (error) {
+                console.log('User not found, proceeding with registration');
+            }
+            
             // Simulate API call
             showLoading();
             setTimeout(() => {
                 hideLoading();
+                currentUser = { phone: phone }; // Temporary user object
                 navigateToScreen('otp-verification');
                 startOTPTimer();
             }, 2000);
@@ -896,13 +1175,25 @@
                 updatePinDots('set-pin');
                 
                 if (tempPin.length === 4) {
-                    setTimeout(() => {
-                        userPin = tempPin;
-                        tempPin = '';
-                        showSuccess();
-                        setTimeout(() => {
-                            navigateToScreen('home');
-                        }, 1500);
+                    setTimeout(async () => {
+                        try {
+                            // Save user to database
+                            await db.saveUser(currentUser.phone, tempPin);
+                            await db.saveSession(currentUser.phone);
+                            
+                            currentUser.pin = tempPin;
+                            tempPin = '';
+                            showSuccess();
+                            
+                            setTimeout(() => {
+                                document.getElementById('user-phone-display').textContent = currentUser.phone;
+                                navigateToScreen('home');
+                            }, 1500);
+                        } catch (error) {
+                            showError(document.querySelector('#set-pin .pin-dots-container'), 'Ошибка сохранения');
+                            tempPin = '';
+                            updatePinDots('set-pin');
+                        }
                     }, 300);
                 }
             }
@@ -921,17 +1212,23 @@
                 updatePinDots('login-pin');
                 
                 if (loginPin.length === 4) {
-                    setTimeout(() => {
-                        if (loginPin === userPin) {
-                            loginPin = '';
-                            showSuccess();
-                            setTimeout(() => {
-                                navigateToScreen('home');
-                            }, 1500);
+                    setTimeout(async () => {
+                        if (loginPin === currentUser.pin) {
+                            try {
+                                await db.saveSession(currentUser.phone);
+                                loginPin = '';
+                                showSuccess();
+                                setTimeout(() => {
+                                    document.getElementById('user-phone-display').textContent = currentUser.phone;
+                                    navigateToScreen('home');
+                                }, 1500);
+                            } catch (error) {
+                                showError(document.querySelector('#login-pin .pin-dots-container'), 'Ошибка входа');
+                            }
                         } else {
                             loginPin = '';
                             updatePinDots('login-pin');
-                            showError(document.querySelector('#login-pin .pin-container'), 'Неверный ПИН-код');
+                            showError(document.querySelector('#login-pin .pin-dots-container'), 'Неверный ПИН-код');
                         }
                     }, 300);
                 }
@@ -974,12 +1271,13 @@
         }
 
         function checkInactivity() {
-            setInterval(() => {
+            setInterval(async () => {
                 const now = Date.now();
                 const inactiveTime = now - lastActivity;
                 
                 // 2 minutes of inactivity
-                if (inactiveTime > 120000 && currentScreen === 'home' && userPin) {
+                if (inactiveTime > 120000 && currentScreen === 'home' && currentUser) {
+                    await db.clearSession();
                     navigateToScreen('login-pin');
                 }
             }, 10000); // Check every 10 seconds
@@ -1022,17 +1320,19 @@
             const errorEl = document.createElement('div');
             errorEl.style.cssText = `
                 position: fixed;
-                top: 50px;
+                top: 80px;
                 left: 50%;
                 transform: translateX(-50%);
-                background: #e74c3c;
+                background: #ff3b30;
                 color: white;
-                padding: 15px 25px;
-                border-radius: 10px;
+                padding: 12px 20px;
+                border-radius: 8px;
                 font-size: 14px;
-                font-weight: 600;
+                font-weight: 500;
                 z-index: 1000;
                 animation: slideInDown 0.3s ease-out;
+                max-width: 280px;
+                text-align: center;
             `;
             errorEl.textContent = message;
             
@@ -1061,6 +1361,12 @@
                 vibrate();
             }
         });
+
+        // Telegram WebApp initialization
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
     </script>
 </body>
 </html>
