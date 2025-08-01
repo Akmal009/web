@@ -1,4 +1,111 @@
-<!DOCTYPE html>
+<!-- History Screen -->
+    <div id="historyScreen" class="screen">
+        <div class="container">
+            <div class="header-home">
+                <div class="greeting">
+                    <span>Transaction History</span>
+                </div>
+                <button class="filter-btn" onclick="showFilterOptions()">
+                    <span class="filter-icon">⚙️</span>
+                </button>
+            </div>
+            
+            <div class="balance-summary">
+                <div class="balance-card">
+                    <div class="balance-item">
+                        <div class="balance-label">Total Balance</div>
+                        <div class="balance-value" id="totalBalance">0 UZS</div>
+                    </div>
+                    <div class="balance-divider"></div>
+                    <div class="balance-item">
+                        <div class="balance-label">This Month</div>
+                        <div class="balance-change" id="monthlyChange">+0 UZS</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-filters">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterTransactions('all')">All</button>
+                    <button class="filter-tab" onclick="filterTransactions('income')">Income</button>
+                    <button class="filter-tab" onclick="filterTransactions('outcome')">Outcome</button>
+                </div>
+            </div>
+            
+            <div class="history-list" id="historyList">
+                <!-- Transaction history will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <button class="nav-btn" onclick="switchTab('home')">
+                <div class="nav-icon">🏠</div>
+                <span>Home</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('transfers')">
+                <div class="nav-icon">💸</div>
+                <span>Transfers</span>
+            </button>
+            <button class="nav-btn active" onclick="switchTab('history')">
+                <div class="nav-icon">📝</div>
+                <span>History</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('profile')">
+                <div class="nav-icon">👤</div>
+                <span>Profile</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Transaction Detail Modal -->
+    <div id="transactionDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Transaction Details</h3>
+                <button class="close-btn" onclick="closeModal('transactionDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="transaction-detail-content">
+                    <div class="transaction-status" id="detailStatus">
+                        <div class="status-icon">✅</div>
+                        <div class="status-text">Completed</div>
+                    </div>
+                    
+                    <div class="transaction-amount-detail" id="detailAmount">-2,500 UZS</div>
+                    
+                    <div class="transaction-info">
+                        <div class="info-row">
+                            <span class="info-label">Transaction ID</span>
+                            <span class="info-value" id="detailId">TXN12345678</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Date & Time</span>
+                            <span class="info-value" id="detailDate">Dec 15, 2024 at 2:30 PM</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">From</span>
+                            <span class="info-value" id="detailFrom">**** **** **** 1234</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">To</span>
+                            <span class="info-value" id="detailTo">Sarah Wilson</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Fee</span>
+                            <span class="info-value" id="detailFee">25 UZS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="primary-btn" onclick="downloadTransactionReceipt()">
+                    <span class="btn-icon">📄</span>
+                    Download Receipt
+                </button>
+            </div>
+        </div>
+    </div><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -267,7 +374,486 @@
         </div>
     </div>
 
-    <!-- Add Card Modal -->
+    <!-- Transfer Screens -->
+    <!-- Transfer 1 - Enter Details -->
+    <div id="transferScreen" class="screen">
+        <div class="container">
+            <button class="back-btn" onclick="goBack('homeScreen')">←</button>
+            
+            <div class="header">
+                <h1 class="title">Transfer Money</h1>
+                <p class="subtitle">Send money to any card quickly and securely</p>
+            </div>
+            
+            <div class="transfer-form">
+                <div class="form-section">
+                    <label class="section-label">From</label>
+                    <div class="card-selector" id="fromCardSelector" onclick="selectFromCard()">
+                        <div class="card-preview">
+                            <div class="card-icon">💳</div>
+                            <div class="card-details">
+                                <div class="card-name" id="fromCardName">Select Card</div>
+                                <div class="card-balance" id="fromCardBalance">Balance: 0 UZS</div>
+                            </div>
+                            <div class="selector-arrow">›</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <label class="section-label">To</label>
+                    <div class="recipient-input">
+                        <input type="text" 
+                               id="recipientCard" 
+                               placeholder="Enter card number" 
+                               class="card-input"
+                               oninput="handleRecipientInput(this)">
+                        <div class="recipient-info" id="recipientInfo" style="display: none;">
+                            <div class="recipient-avatar" id="recipientAvatar">?</div>
+                            <div class="recipient-details">
+                                <div class="recipient-name" id="recipientName">Unknown</div>
+                                <div class="recipient-bank" id="recipientBank">Unknown Bank</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <label class="section-label">Amount</label>
+                    <div class="amount-input">
+                        <input type="number" 
+                               id="transferAmount" 
+                               placeholder="0" 
+                               class="amount-field"
+                               oninput="calculateFee()">
+                        <span class="currency">UZS</span>
+                    </div>
+                    <div class="fee-info" id="feeInfo" style="display: none;">
+                        <div class="fee-row">
+                            <span>Transfer Amount:</span>
+                            <span id="transferAmountDisplay">0 UZS</span>
+                        </div>
+                        <div class="fee-row">
+                            <span>Fee (1%):</span>
+                            <span id="feeAmount">0 UZS</span>
+                        </div>
+                        <div class="fee-row total">
+                            <span>Total Amount:</span>
+                            <span id="totalAmount">0 UZS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="primary-btn" id="continueTransfer" onclick="reviewTransfer()" disabled>
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- Transfer 2 - Confirm with Face ID -->
+    <div id="transferConfirm" class="screen">
+        <div class="container">
+            <button class="back-btn" onclick="goBack('transferScreen')">←</button>
+            
+            <div class="header">
+                <h1 class="title">Transfer Confirmation</h1>
+            </div>
+            
+            <div class="transfer-summary">
+                <div class="transfer-amount-big" id="confirmAmount">$2,450.00</div>
+                <div class="transfer-label">Transfer Amount</div>
+                
+                <div class="transfer-details">
+                    <div class="detail-row">
+                        <span class="detail-label">FROM</span>
+                        <div class="detail-value">
+                            <div class="card-mini" id="confirmFromCard">
+                                <span class="card-number">**** **** **** 4521</span>
+                                <span class="card-type">Available</span>
+                                <span class="balance">$6,746.30</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">TO</span>
+                        <div class="detail-value">
+                            <div class="recipient-mini" id="confirmRecipient">
+                                <div class="recipient-avatar-small">SJ</div>
+                                <div class="recipient-info-small">
+                                    <div class="recipient-name-small">Sarah Johnson</div>
+                                    <div class="recipient-email">sarah.johnson@email.com</div>
+                                </div>
+                                <div class="verified-badge">✓</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="transaction-details">
+                    <h3>Transaction Details</h3>
+                    <div class="detail-item">
+                        <span>Transfer Amount</span>
+                        <span id="confirmTransferAmount">$2,450.00</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Transfer Fee</span>
+                        <span id="confirmFee">$0.00</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>Processing Time</span>
+                        <span>Instant</span>
+                    </div>
+                    <div class="detail-item total-row">
+                        <span>Total</span>
+                        <span id="confirmTotal">$2,450.00</span>
+                    </div>
+                </div>
+                
+                <div class="secure-transfer">
+                    <div class="secure-icon">🔒</div>
+                    <p>Secure Transfer</p>
+                    <span>Your transaction is protected with bank-level security and encryption.</span>
+                </div>
+            </div>
+            
+            <div class="confirm-actions">
+                <button class="primary-btn" onclick="confirmWithPin()">
+                    <span class="btn-icon">🔒</span>
+                    Confirm with Face ID
+                </button>
+                <button class="secondary-btn" onclick="confirmWithPin()">
+                    <span class="btn-icon">🔐</span>
+                    Use PIN Instead
+                </button>
+                <button class="link-btn" onclick="goBack('transferScreen')">Cancel Transfer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer 3 - Processing -->
+    <div id="transferProcessing" class="screen">
+        <div class="container">
+            <div class="processing-content">
+                <div class="processing-animation">
+                    <div class="loading-circle">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+                
+                <h1 class="title">Processing Transfer</h1>
+                <p class="subtitle">Please wait while we process your transfer</p>
+                
+                <div class="processing-details">
+                    <div class="processing-row">
+                        <span>Amount</span>
+                        <span id="processingAmount">$2,500.00</span>
+                    </div>
+                    <div class="processing-row">
+                        <span>To</span>
+                        <span id="processingRecipient">John Smith</span>
+                    </div>
+                    <div class="processing-row">
+                        <span>Reference ID</span>
+                        <span id="processingId">TXN12345678</span>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Initializing transfer...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Step 4 - Status Screen -->
+    <div id="transferComplete" class="screen">
+        <div class="container">
+            <div class="success-content">
+                <div class="success-icon">✅</div>
+                <h1 class="title">Transfer Completed</h1>
+                <p class="subtitle">Your money has been sent successfully</p>
+                
+                <div class="transfer-success-amount" id="successAmount">$1,250.00</div>
+                
+                <div class="success-details">
+                    <div class="success-recipient">
+                        <div class="recipient-avatar-large" id="successAvatar">JS</div>
+                        <div class="recipient-info-large">
+                            <div class="recipient-name-large" id="successRecipientName">John Smith</div>
+                            <div class="recipient-id" id="successRecipientId">****1234</div>
+                        </div>
+                    </div>
+                    
+                    <div class="transaction-summary">
+                        <h3>Transaction Details</h3>
+                        <div class="summary-row">
+                            <span>Transfer Fee</span>
+                            <span id="successFee">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax Amount</span>
+                            <span id="successTax">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Processing ID</span>
+                            <span id="successTransactionId">TXN12345678</span>
+                        </div>
+                        <div class="summary-row completed">
+                            <span>Status</span>
+                            <span>✓ COMPLETED</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="success-actions">
+                    <button class="primary-btn" onclick="downloadReceipt()">
+                        <span class="btn-icon">📄</span>
+                        Download Receipt
+                    </button>
+                    <button class="secondary-btn" onclick="sendAgain()">
+                        <span class="btn-icon">🔄</span>
+                        Send Again
+                    </button>
+                    <button class="link-btn" onclick="goHome()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Select Card Modal -->
+    <div id="selectCardModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Card</h3>
+                <button class="close-btn" onclick="closeModal('selectCardModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="cards-list" id="cardsList">
+                    <!-- Cards will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Screen -->
+    <div id="profileScreen" class="screen">
+        <div class="container">
+            <div class="profile-header">
+                <div class="profile-photo" id="profilePhoto">
+                    <img src="" alt="Profile" id="profilePhotoImg">
+                </div>
+                <div class="profile-info">
+                    <h2 class="profile-name" id="profileName">John Doe</h2>
+                    <p class="profile-phone" id="profilePhone">+998 90 123 45 67</p>
+                </div>
+            </div>
+            
+            <div class="profile-menu">
+                <div class="menu-section">
+                    <div class="menu-item" onclick="showLanguageSelector()">
+                        <div class="menu-icon">🌐</div>
+                        <div class="menu-content">
+                            <div class="menu-title">Language</div>
+                            <div class="menu-subtitle" id="currentLanguage">English</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                    
+                    <div class="menu-item" onclick="toggleAppTheme()">
+                        <div class="menu-icon">🎨</div>
+                        <div class="menu-content">
+                            <div class="menu-title">Theme</div>
+                            <div class="menu-subtitle" id="currentTheme">Light</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-item disabled">
+                        <div class="menu-icon">⚙️</div>
+                        <div class="menu-content">
+                            <div class="menu-title">Settings</div>
+                            <div class="menu-subtitle">Coming soon</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                    
+                    <div class="menu-item disabled">
+                        <div class="menu-icon">🔔</div>
+                        <div class="menu-content">
+                            <div class="menu-title">Notifications</div>
+                            <div class="menu-subtitle">Coming soon</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                    
+                    <div class="menu-item disabled">
+                        <div class="menu-icon">🛡️</div>
+                        <div class="menu-content">
+                            <div class="menu-title">Security</div>
+                            <div class="menu-subtitle">Coming soon</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-item disabled">
+                        <div class="menu-icon">❓</div>
+                        <div class="menu-content">
+                            <div class="menu-title">Help & Support</div>
+                            <div class="menu-subtitle">Coming soon</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                    
+                    <div class="menu-item disabled">
+                        <div class="menu-icon">📋</div>
+                        <div class="menu-content">
+                            <div class="menu-title">Terms & Privacy</div>
+                            <div class="menu-subtitle">Coming soon</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-item logout" onclick="confirmLogout()">
+                        <div class="menu-icon">🚪</div>
+                        <div class="menu-content">
+                            <div class="menu-title">Logout</div>
+                            <div class="menu-subtitle">Sign out of your account</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <button class="nav-btn" onclick="switchTab('home')">
+                <div class="nav-icon">🏠</div>
+                <span>Home</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('transfers')">
+                <div class="nav-icon">💸</div>
+                <span>Transfers</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('history')">
+                <div class="nav-icon">📝</div>
+                <span>History</span>
+            </button>
+            <button class="nav-btn active" onclick="switchTab('profile')">
+                <div class="nav-icon">👤</div>
+                <span>Profile</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Language Selector Modal -->
+    <div id="languageSelectorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Language</h3>
+                <button class="close-btn" onclick="closeModal('languageSelectorModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="language-options">
+                    <div class="language-option" onclick="changeLanguage('ru')">
+                        <div class="language-flag">🇷🇺</div>
+                        <div class="language-name">Русский</div>
+                        <div class="language-check" id="langCheck-ru">✓</div>
+                    </div>
+                    <div class="language-option" onclick="changeLanguage('uz')">
+                        <div class="language-flag">🇺🇿</div>
+                        <div class="language-name">O'zbek</div>
+                        <div class="language-check" id="langCheck-uz">✓</div>
+                    </div>
+                    <div class="language-option" onclick="changeLanguage('en')">
+                        <div class="language-flag">🇺🇸</div>
+                        <div class="language-name">English</div>
+                        <div class="language-check" id="langCheck-en">✓</div>
+                    </div>
+                    <div class="language-option" onclick="changeLanguage('kk')">
+                        <div class="language-flag">🇰🇿</div>
+                        <div class="language-name">Қазақша</div>
+                        <div class="language-check" id="langCheck-kk">✓</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutConfirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirm Logout</h3>
+                <button class="close-btn" onclick="closeModal('logoutConfirmModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="logout-confirm-content">
+                    <div class="logout-icon">🚪</div>
+                    <p>Are you sure you want to logout? You'll need to verify your phone number and PIN again.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" onclick="closeModal('logoutConfirmModal')">Cancel</button>
+                <button class="primary-btn logout-btn" onclick="performLogout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN Confirmation Modal -->
+    <div id="pinConfirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirm Transfer</h3>
+                <button class="close-btn" onclick="closeModal('pinConfirmModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="pin-confirm-content">
+                    <div class="security-icon">🔐</div>
+                    <p>Enter your PIN to confirm this transfer</p>
+                    
+                    <div class="pin-dots">
+                        <div class="pin-dot" id="confirmPinDot1"></div>
+                        <div class="pin-dot" id="confirmPinDot2"></div>
+                        <div class="pin-dot" id="confirmPinDot3"></div>
+                        <div class="pin-dot" id="confirmPinDot4"></div>
+                    </div>
+                    
+                    <div class="numpad">
+                        <div class="numpad-row">
+                            <button class="num-btn" onclick="enterConfirmPin('1')">1</button>
+                            <button class="num-btn" onclick="enterConfirmPin('2')">2</button>
+                            <button class="num-btn" onclick="enterConfirmPin('3')">3</button>
+                        </div>
+                        <div class="numpad-row">
+                            <button class="num-btn" onclick="enterConfirmPin('4')">4</button>
+                            <button class="num-btn" onclick="enterConfirmPin('5')">5</button>
+                            <button class="num-btn" onclick="enterConfirmPin('6')">6</button>
+                        </div>
+                        <div class="numpad-row">
+                            <button class="num-btn" onclick="enterConfirmPin('7')">7</button>
+                            <button class="num-btn" onclick="enterConfirmPin('8')">8</button>
+                            <button class="num-btn" onclick="enterConfirmPin('9')">9</button>
+                        </div>
+                        <div class="numpad-row">
+                            <button class="num-btn invisible"></button>
+                            <button class="num-btn" onclick="enterConfirmPin('0')">0</button>
+                            <button class="num-btn delete-btn" onclick="deleteConfirmPin()">⌫</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="addCardModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
