@@ -1,1372 +1,303 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HamyonPay - Telegram Mini App</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .app-container {
-            width: 100%;
-            max-width: 480px;
-            height: 100vh;
-            margin: 0 auto;
-            background: #ffffff;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-
-        .telegram-header {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 480px;
-            height: 56px;
-            background: #212121;
-            color: white;
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            z-index: 1000;
-        }
-
-        .header-close {
-            font-size: 24px;
-            cursor: pointer;
-            margin-right: 16px;
-        }
-
-        .header-title {
-            font-size: 18px;
-            font-weight: 500;
-            flex: 1;
-        }
-
-        .header-menu {
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .screen {
-            position: absolute;
-            top: 56px;
-            left: 0;
-            width: 100%;
-            height: calc(100vh - 56px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            background: #ffffff;
-        }
-
-        .screen.active {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .screen.prev {
-            transform: translateX(-100%);
-        }
-
-        /* Splash Screen */
-        .splash-screen {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            top: 0;
-            height: 100vh;
-        }
-
-        .logo {
-            width: 100px;
-            height: 100px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            font-weight: bold;
-            margin-bottom: 24px;
-            animation: logoFloat 2s ease-in-out infinite alternate;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.3);
-        }
-
-        @keyframes logoFloat {
-            from { transform: translateY(-8px); }
-            to { transform: translateY(8px); }
-        }
-
-        .app-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            opacity: 0;
-            animation: fadeInUp 1s ease-out 0.5s forwards;
-        }
-
-        .app-subtitle {
-            font-size: 16px;
-            opacity: 0.8;
-            animation: fadeInUp 1s ease-out 0.7s forwards;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .loading-dots {
-            display: flex;
-            gap: 6px;
-            margin-top: 32px;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            background: rgba(255,255,255,0.7);
-            border-radius: 50%;
-            animation: loadingBounce 1.4s ease-in-out infinite both;
-        }
-
-        .dot:nth-child(1) { animation-delay: -0.32s; }
-        .dot:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes loadingBounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-
-        /* Form Styles */
-        .form-container {
-            width: 100%;
-            max-width: 320px;
-        }
-
-        .screen-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 8px;
-            opacity: 0;
-            animation: slideInDown 0.6s ease-out 0.2s forwards;
-        }
-
-        .screen-subtitle {
-            font-size: 15px;
-            color: #8e8e93;
-            text-align: center;
-            margin-bottom: 32px;
-            line-height: 1.4;
-            opacity: 0;
-            animation: slideInDown 0.6s ease-out 0.4s forwards;
-        }
-
-        @keyframes slideInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .input-group {
-            margin-bottom: 24px;
-            opacity: 0;
-            animation: slideInUp 0.6s ease-out 0.6s forwards;
-        }
-
-        .input-wrapper {
-            position: relative;
-            overflow: hidden;
-            border-radius: 12px;
-            background: #f2f2f7;
-            border: 1px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .input-wrapper:focus-within {
-            border-color: #007aff;
-            background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            background: transparent;
-            font-size: 16px;
-            color: #000000;
-            outline: none;
-        }
-
-        .input-field::placeholder {
-            color: #8e8e93;
-        }
-
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 16px;
-            background: #007aff;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            opacity: 0;
-            animation: slideInUp 0.6s ease-out 0.8s forwards;
-        }
-
-        .btn-primary:hover {
-            background: #0056b3;
-            transform: translateY(-1px);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-            background: #004494;
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* OTP Input */
-        .otp-container {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-bottom: 24px;
-        }
-
-        .otp-input {
-            width: 45px;
-            height: 55px;
-            border: 2px solid #e5e5ea;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: 600;
-            color: #000000;
-            background: #ffffff;
-            transition: all 0.2s ease;
-        }
-
-        .otp-input:focus {
-            border-color: #007aff;
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
-        }
-
-        .otp-input.filled {
-            border-color: #34c759;
-            background: #f0fff4;
-            animation: otpPulse 0.2s ease-out;
-        }
-
-        @keyframes otpPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        /* Timer */
-        .timer-container {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .timer {
-            font-size: 17px;
-            font-weight: 600;
-            color: #ff3b30;
-            margin-bottom: 8px;
-        }
-
-        .resend-btn {
-            background: none;
-            border: none;
-            color: #007aff;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
-
-        .resend-btn:hover {
-            opacity: 0.7;
-        }
-
-        .resend-btn:disabled {
-            color: #8e8e93;
-            cursor: not-allowed;
-        }
-
-        /* PIN Screen */
-        .pin-screen-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .pin-dots-container {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            margin-bottom: 48px;
-        }
-
-        .pin-dot {
-            width: 16px;
-            height: 16px;
-            border: 2px solid #e5e5ea;
-            border-radius: 50%;
-            background: transparent;
-            transition: all 0.2s ease;
-        }
-
-        .pin-dot.filled {
-            background: #007aff;
-            border-color: #007aff;
-            animation: pinFill 0.2s ease-out;
-        }
-
-        @keyframes pinFill {
-            0% { transform: scale(0.8); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .pin-keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            width: 100%;
-            max-width: 250px;
-        }
-
-        .pin-key {
-            width: 72px;
-            height: 72px;
-            border: none;
-            border-radius: 50%;
-            background: #f2f2f7;
-            font-size: 32px;
-            font-weight: 400;
-            color: #000000;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-        }
-
-        .pin-key:hover {
-            background: #e5e5ea;
-            transform: scale(1.02);
-        }
-
-        .pin-key:active {
-            transform: scale(0.95);
-            background: #d1d1d6;
-        }
-
-        .pin-key.delete {
-            background: #ff3b30;
-            color: white;
-            font-size: 20px;
-        }
-
-        .pin-key.delete:hover {
-            background: #d70015;
-        }
-
-        .pin-key.empty {
-            background: transparent;
-            cursor: default;
-        }
-
-        .pin-key.empty:hover {
-            background: transparent;
-            transform: none;
-        }
-
-        /* Home Screen */
-        .home-container {
-            width: 100%;
-            height: 100%;
-            padding: 24px 20px;
-        }
-
-        .home-header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .welcome-text {
-            font-size: 28px;
-            font-weight: 700;
-            color: #000000;
-            margin-bottom: 8px;
-        }
-
-        .user-phone {
-            font-size: 16px;
-            color: #8e8e93;
-        }
-
-        .balance-card {
-            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
-            border-radius: 16px;
-            padding: 24px;
-            color: white;
-            text-align: center;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 32px rgba(0, 122, 255, 0.2);
-            animation: balanceFloat 4s ease-in-out infinite alternate;
-        }
-
-        @keyframes balanceFloat {
-            from { transform: translateY(-3px); }
-            to { transform: translateY(3px); }
-        }
-
-        .balance-label {
-            font-size: 15px;
-            opacity: 0.8;
-            margin-bottom: 8px;
-        }
-
-        .balance-amount {
-            font-size: 32px;
-            font-weight: 700;
-        }
-
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-        .action-btn {
-            padding: 20px 16px;
-            background: #f2f2f7;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-
-        .action-btn:hover {
-            background: #e5e5ea;
-            transform: translateY(-2px);
-        }
-
-        .action-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-
-        .action-text {
-            font-size: 15px;
-            font-weight: 500;
-            color: #000000;
-        }
-
-        /* Success/Error Messages */
-        .success-check {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #34c759;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 16px auto;
-            animation: successPop 0.5s ease-out;
-        }
-
-        .success-check::after {
-            content: '✓';
-            color: white;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        @keyframes successPop {
-            0% { transform: scale(0); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .error-shake {
-            animation: shake 0.4s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
-        }
-
-        .loading {
-            width: 32px;
-            height: 32px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007aff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 16px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Database Status */
-        .db-status {
-            position: fixed;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 1001;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .db-status.show {
-            opacity: 1;
-        }
-
-        /* Responsive */
-        @media (max-width: 480px) {
-            .otp-container {
-                gap: 8px;
-            }
-            
-            .otp-input {
-                width: 40px;
-                height: 50px;
-                font-size: 20px;
-            }
-            
-            .pin-keypad {
-                gap: 20px;
-                max-width: 220px;
-            }
-            
-            .pin-key {
-                width: 65px;
-                height: 65px;
-                font-size: 28px;
-            }
-        }
-    </style>
+    <title>MiniBank</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div class="app-container">
-
-        <!-- Splash Screen -->
-        <div class="screen splash-screen active" id="splash">
-            <div class="logo">H</div>
-            <h1 class="app-title">HamyonPay</h1>
-            <p class="app-subtitle">Ваш надежный платежный помощник</p>
-            <div class="loading-dots">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-            </div>
-        </div>
-
-        <!-- Phone Registration -->
-        <div class="screen" id="phone-registration">
-            <div class="form-container">
-                <h2 class="screen-title">Добро пожаловать!</h2>
-                <p class="screen-subtitle">Введите ваш номер телефона для регистрации</p>
-                
-                <div class="input-group">
-                    <div class="input-wrapper">
-                        <input type="tel" class="input-field" placeholder="+998 __ ___ __ __" id="phone-input">
+    <!-- Phone Number Registration Screen -->
+    <div id="phoneRegistration" class="screen active">
+        <div class="container">
+            <div class="header">
+                <div class="app-icon">
+                    <div class="icon-square">
+                        <div class="icon-inner"></div>
                     </div>
                 </div>
-                
-                <button class="btn-primary" onclick="sendOTP()">
-                    Получить код
-                </button>
+                <h1 class="title">Create Account</h1>
+                <p class="subtitle">Enter your phone number to get started with secure payments</p>
             </div>
-        </div>
-
-        <!-- OTP Verification -->
-        <div class="screen" id="otp-verification">
-            <div class="form-container">
-                <h2 class="screen-title">Подтверждение</h2>
-                <p class="screen-subtitle">Введите код, отправленный на ваш номер</p>
-                
-                <div class="otp-container">
-                    <input type="text" class="otp-input" maxlength="1" data-index="0">
-                    <input type="text" class="otp-input" maxlength="1" data-index="1">
-                    <input type="text" class="otp-input" maxlength="1" data-index="2">
-                    <input type="text" class="otp-input" maxlength="1" data-index="3">
-                    <input type="text" class="otp-input" maxlength="1" data-index="4">
-                    <input type="text" class="otp-input" maxlength="1" data-index="5">
+            
+            <div class="form-group">
+                <label class="label">Phone Number</label>
+                <div class="phone-input">
+                    <span class="country-code">+998</span>
+                    <input type="tel" id="phoneNumber" placeholder="(00) 000-0000" class="input-field">
                 </div>
-                
-                <div class="timer-container">
-                    <div class="timer" id="timer">02:00</div>
-                    <button class="resend-btn" id="resend-btn" onclick="resendOTP()" disabled>
-                        Отправить повторно
-                    </button>
-                </div>
-                
-                <button class="btn-primary" onclick="verifyOTP()">
-                    Подтвердить
-                </button>
-            </div>
-        </div>
-
-        <!-- Set PIN -->
-        <div class="screen" id="set-pin">
-            <div class="pin-screen-container">
-                <h2 class="screen-title">Создайте ПИН-код</h2>
-                <p class="screen-subtitle">Создайте 4-значный ПИН-код для безопасности</p>
-                
-                <div class="pin-dots-container">
-                    <div class="pin-dot" data-index="0"></div>
-                    <div class="pin-dot" data-index="1"></div>
-                    <div class="pin-dot" data-index="2"></div>
-                    <div class="pin-dot" data-index="3"></div>
-                </div>
-                
-                <div class="pin-keypad">
-                    <button class="pin-key" onclick="addPinDigit('1')">1</button>
-                    <button class="pin-key" onclick="addPinDigit('2')">2</button>
-                    <button class="pin-key" onclick="addPinDigit('3')">3</button>
-                    <button class="pin-key" onclick="addPinDigit('4')">4</button>
-                    <button class="pin-key" onclick="addPinDigit('5')">5</button>
-                    <button class="pin-key" onclick="addPinDigit('6')">6</button>
-                    <button class="pin-key" onclick="addPinDigit('7')">7</button>
-                    <button class="pin-key" onclick="addPinDigit('8')">8</button>
-                    <button class="pin-key" onclick="addPinDigit('9')">9</button>
-                    <button class="pin-key empty"></button>
-                    <button class="pin-key" onclick="addPinDigit('0')">0</button>
-                    <button class="pin-key delete" onclick="removePinDigit()">⌫</button>
+                <div class="info-text">
+                    <span class="info-icon">ℹ️</span>
+                    <span>We'll send you a verification code to confirm your number. Standard message rates may apply.</span>
                 </div>
             </div>
-        </div>
-
-        <!-- Login with PIN -->
-        <div class="screen" id="login-pin">
-            <div class="pin-screen-container">
-                <h2 class="screen-title">Введите ПИН-код</h2>
-                <p class="screen-subtitle">Введите ваш ПИН-код для входа</p>
-                
-                <div class="pin-dots-container">
-                    <div class="pin-dot" data-index="0"></div>
-                    <div class="pin-dot" data-index="1"></div>
-                    <div class="pin-dot" data-index="2"></div>
-                    <div class="pin-dot" data-index="3"></div>
-                </div>
-                
-                <div class="pin-keypad">
-                    <button class="pin-key" onclick="addLoginPinDigit('1')">1</button>
-                    <button class="pin-key" onclick="addLoginPinDigit('2')">2</button>
-                    <button class="pin-key" onclick="addLoginPinDigit('3')">3</button>
-                    <button class="pin-key" onclick="addLoginPinDigit('4')">4</button>
-                    <button class="pin-key" onclick="addLoginPinDigit('5')">5</button>
-                    <button class="pin-key" onclick="addLoginPinDigit('6')">6</button>
-                    <button class="pin-key" onclick="addLoginPinDigit('7')">7</button>
-                    <button class="pin-key" onclick="addLoginPinDigit('8')">8</button>
-                    <button class="pin-key" onclick="addLoginPinDigit('9')">9</button>
-                    <button class="pin-key empty"></button>
-                    <button class="pin-key" onclick="addLoginPinDigit('0')">0</button>
-                    <button class="pin-key delete" onclick="removeLoginPinDigit()">⌫</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Home Screen -->
-        <div class="screen" id="home">
-            <div class="home-container">
-                <div class="home-header">
-                    <h2 class="welcome-text">Добро пожаловать!</h2>
-                    <p class="user-phone" id="user-phone-display"></p>
-                </div>
-                
-                <div class="balance-card">
-                    <div class="balance-label">Ваш баланс</div>
-                    <div class="balance-amount">150,000,000 сум</div>
-                </div>
-                
-                <div class="quick-actions">
-                    <button class="action-btn">
-                        <div class="action-icon">💳</div>
-                        <div class="action-text">Пополнить</div>
-                    </button>
-                    <button class="action-btn">
-                        <div class="action-icon">📤</div>
-                        <div class="action-text">Перевести</div>
-                    </button>
-                    <button class="action-btn">
-                        <div class="action-icon">📱</div>
-                        <div class="action-text">Оплатить</div>
-                    </button>
-                    <button class="action-btn">
-                        <div class="action-icon">📊</div>
-                        <div class="action-text">История</div>
-                    </button>
-                </div>
+            
+            <button class="primary-btn" onclick="sendOTP()">Next</button>
+            
+            <div class="terms">
+                <p>By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></p>
             </div>
         </div>
     </div>
 
-    <!-- Database Status -->
-    <div class="db-status" id="db-status"></div>
-
-    <script>
-        // Database Management
-        class DatabaseManager {
-            constructor() {
-                this.dbName = 'hamyonpay_db';
-                this.version = 1;
-                this.db = null;
-                this.init();
-            }
-
-            async init() {
-                try {
-                    // Simulate SQLite with IndexedDB for web environment
-                    const request = indexedDB.open(this.dbName, this.version);
-                    
-                    request.onerror = () => {
-                        console.error('Database error:', request.error);
-                        this.showStatus('Database error', 'error');
-                    };
-
-                    request.onsuccess = () => {
-                        this.db = request.result;
-                        this.showStatus('Database connected', 'success');
-                        this.loadUserData();
-                    };
-
-                    request.onupgradeneeded = (event) => {
-                        this.db = event.target.result;
-                        
-                        // Create users table
-                        if (!this.db.objectStoreNames.contains('users')) {
-                            const userStore = this.db.createObjectStore('users', { keyPath: 'phone' });
-                            userStore.createIndex('phone', 'phone', { unique: true });
-                        }
-
-                        // Create sessions table
-                        if (!this.db.objectStoreNames.contains('sessions')) {
-                            const sessionStore = this.db.createObjectStore('sessions', { keyPath: 'id' });
-                        }
-                    };
-                } catch (error) {
-                    console.error('Database initialization failed:', error);
-                    this.showStatus('Database init failed', 'error');
-                }
-            }
-
-            async saveUser(phone, pin) {
-                return new Promise((resolve, reject) => {
-                    const transaction = this.db.transaction(['users'], 'readwrite');
-                    const store = transaction.objectStore('users');
-                    
-                    const userData = {
-                        phone: phone,
-                        pin: pin,
-                        createdAt: new Date().toISOString(),
-                        balance: 10000
-                    };
-
-                    const request = store.put(userData);
-                    
-                    request.onsuccess = () => {
-                        this.showStatus('User saved to database', 'success');
-                        resolve(userData);
-                    };
-                    
-                    request.onerror = () => {
-                        this.showStatus('Failed to save user', 'error');
-                        reject(request.error);
-                    };
-                });
-            }
-
-            async getUser(phone) {
-                return new Promise((resolve, reject) => {
-                    const transaction = this.db.transaction(['users'], 'readonly');
-                    const store = transaction.objectStore('users');
-                    const request = store.get(phone);
-                    
-                    request.onsuccess = () => {
-                        resolve(request.result);
-                    };
-                    
-                    request.onerror = () => {
-                        reject(request.error);
-                    };
-                });
-            }
-
-            async saveSession(phone) {
-                return new Promise((resolve, reject) => {
-                    const transaction = this.db.transaction(['sessions'], 'readwrite');
-                    const store = transaction.objectStore('sessions');
-                    
-                    const sessionData = {
-                        id: 'current',
-                        phone: phone,
-                        loginTime: new Date().toISOString(),
-                        lastActivity: new Date().toISOString()
-                    };
-
-                    const request = store.put(sessionData);
-                    
-                    request.onsuccess = () => {
-                        resolve(sessionData);
-                    };
-                    
-                    request.onerror = () => {
-                        reject(request.error);
-                    };
-                });
-            }
-
-            async getSession() {
-                return new Promise((resolve, reject) => {
-                    const transaction = this.db.transaction(['sessions'], 'readonly');
-                    const store = transaction.objectStore('sessions');
-                    const request = store.get('current');
-                    
-                    request.onsuccess = () => {
-                        resolve(request.result);
-                    };
-                    
-                    request.onerror = () => {
-                        reject(request.error);
-                    };
-                });
-            }
-
-            async clearSession() {
-                return new Promise((resolve, reject) => {
-                    const transaction = this.db.transaction(['sessions'], 'readwrite');
-                    const store = transaction.objectStore('sessions');
-                    const request = store.delete('current');
-                    
-                    request.onsuccess = () => {
-                        resolve();
-                    };
-                    
-                    request.onerror = () => {
-                        reject(request.error);
-                    };
-                });
-            }
-
-            async loadUserData() {
-                try {
-                    const session = await this.getSession();
-                    if (session) {
-                        const user = await this.getUser(session.phone);
-                        if (user) {
-                            // Check session timeout (2 minutes)
-                            const lastActivity = new Date(session.lastActivity);
-                            const now = new Date();
-                            const timeDiff = now - lastActivity;
-                            
-                            if (timeDiff > 120000) { // 2 minutes
-                                await this.clearSession();
-                                navigateToScreen('login-pin');
-                            } else {
-                                currentUser = user;
-                                navigateToScreen('home');
-                                document.getElementById('user-phone-display').textContent = user.phone;
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('Failed to load user data:', error);
-                }
-            }
-
-            showStatus(message, type) {
-                const statusEl = document.getElementById('db-status');
-                statusEl.textContent = message;
-                statusEl.className = `db-status show ${type}`;
+    <!-- OTP Verification Screen -->
+    <div id="otpVerification" class="screen">
+        <div class="container">
+            <button class="back-btn" onclick="goBack('phoneRegistration')">←</button>
+            
+            <div class="header">
+                <h1 class="title">Enter the code</h1>
+                <p class="subtitle">We've sent a 6-digit code to your phone number. Please enter it below to verify your account.</p>
+            </div>
+            
+            <div class="otp-container">
+                <div class="otp-inputs">
+                    <input type="text" class="otp-input" maxlength="1" oninput="handleOTPInput(this, 0)">
+                    <input type="text" class="otp-input" maxlength="1" oninput="handleOTPInput(this, 1)">
+                    <input type="text" class="otp-input" maxlength="1" oninput="handleOTPInput(this, 2)">
+                    <input type="text" class="otp-input" maxlength="1" oninput="handleOTPInput(this, 3)">
+                    <input type="text" class="otp-input" maxlength="1" oninput="handleOTPInput(this, 4)">
+                    <input type="text" class="otp-input" maxlength="1" oninput="handleOTPInput(this, 5)">
+                </div>
                 
-                setTimeout(() => {
-                    statusEl.classList.remove('show');
-                }, 3000);
-            }
-        }
-
-        // App State
-        let currentScreen = 'splash';
-        let currentUser = null;
-        let tempPin = '';
-        let loginPin = '';
-        let otpTimer = 120;
-        let timerInterval;
-        let lastActivity = Date.now();
-        let db = new DatabaseManager();
-
-        // Initialize App
-        document.addEventListener('DOMContentLoaded', function() {
-            // Auto-navigate from splash after 3 seconds
-            setTimeout(() => {
-                // Check if user exists in database
-                checkExistingUser();
-            }, 3000);
-
-            // Setup OTP inputs
-            setupOTPInputs();
-            
-            // Setup phone input mask
-            setupPhoneInput();
-            
-            // Setup inactivity detection
-            setupInactivityDetection();
-        });
-
-        async function checkExistingUser() {
-            try {
-                const session = await db.getSession();
-                if (session) {
-                    const user = await db.getUser(session.phone);
-                    if (user) {
-                        currentUser = user;
-                        navigateToScreen('login-pin');
-                        return;
-                    }
-                }
-            } catch (error) {
-                console.log('No existing session found');
-            }
-            
-            navigateToScreen('phone-registration');
-        }
-
-        // Screen Navigation
-        function navigateToScreen(screenId) {
-            const currentScreenEl = document.querySelector('.screen.active');
-            const nextScreenEl = document.getElementById(screenId);
-            
-            if (currentScreenEl) {
-                currentScreenEl.classList.add('prev');
-                currentScreenEl.classList.remove('active');
-            }
-            
-            setTimeout(() => {
-                nextScreenEl.classList.add('active');
-                if (currentScreenEl) {
-                    currentScreenEl.classList.remove('prev');
-                }
-            }, 100);
-            
-            currentScreen = screenId;
-            resetActivity();
-        }
-
-        // Phone Input Setup
-        function setupPhoneInput() {
-            const phoneInput = document.getElementById('phone-input');
-            phoneInput.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.startsWith('998')) {
-                    value = '+' + value.substring(0, 12);
-                    value = value.replace(/(\+998)(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
-                }
-                e.target.value = value;
-            });
-        }
-
-        // OTP Functions
-        function setupOTPInputs() {
-            const otpInputs = document.querySelectorAll('.otp-input');
-            
-            otpInputs.forEach((input, index) => {
-                input.addEventListener('input', function(e) {
-                    const value = e.target.value;
-                    
-                    if (value) {
-                        e.target.classList.add('filled');
-                        if (index < otpInputs.length - 1) {
-                            otpInputs[index + 1].focus();
-                        }
-                    } else {
-                        e.target.classList.remove('filled');
-                    }
-                    
-                    // Check if all inputs are filled
-                    checkOTPComplete();
-                });
+                <div class="timer">
+                    Code expires in <span id="timer">02:00</span>
+                </div>
                 
-                input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                        otpInputs[index - 1].focus();
-                        otpInputs[index - 1].classList.remove('filled');
-                    }
-                });
-            });
-        }
-
-        function checkOTPComplete() {
-            const otpInputs = document.querySelectorAll('.otp-input');
-            const otpValue = Array.from(otpInputs).map(input => input.value).join('');
+                <div class="resend-section" id="resendSection" style="display: none;">
+                    <p>Didn't receive the code?</p>
+                    <button class="link-btn" onclick="resendCode()">Resend Code</button>
+                </div>
+            </div>
             
-            if (otpValue.length === 6) {
-                // Auto-verify when all digits are entered
-                setTimeout(verifyOTP, 500);
-            }
-        }
+            <button class="primary-btn" id="confirmOTP" onclick="verifyOTP()" disabled>Confirm</button>
+        </div>
+    </div>
 
-        async function sendOTP() {
-            const phoneInput = document.getElementById('phone-input');
-            const phone = phoneInput.value;
+    <!-- Set PIN Screen -->
+    <div id="setPinScreen" class="screen">
+        <div class="container">
+            <button class="back-btn" onclick="goBack('otpVerification')">←</button>
             
-            if (phone.length < 10) {
-                showError(phoneInput, 'Введите корректный номер телефона');
-                return;
-            }
+            <div class="header">
+                <div class="pin-icon">🔒</div>
+                <h1 class="title">Create your PIN</h1>
+                <p class="subtitle">Set up a 4-digit PIN for quick and secure access to your account</p>
+            </div>
             
-            // Check if user already exists
-            try {
-                const existingUser = await db.getUser(phone);
-                if (existingUser) {
-                    currentUser = existingUser;
-                    navigateToScreen('login-pin');
-                    return;
-                }
-            } catch (error) {
-                console.log('User not found, proceeding with registration');
-            }
+            <div class="pin-dots">
+                <div class="pin-dot" id="pinDot1"></div>
+                <div class="pin-dot" id="pinDot2"></div>
+                <div class="pin-dot" id="pinDot3"></div>
+                <div class="pin-dot" id="pinDot4"></div>
+            </div>
             
-            // Simulate API call
-            showLoading();
-            setTimeout(() => {
-                hideLoading();
-                currentUser = { phone: phone }; // Temporary user object
-                navigateToScreen('otp-verification');
-                startOTPTimer();
-            }, 2000);
-        }
-
-        function startOTPTimer() {
-            otpTimer = 120;
-            const timerEl = document.getElementById('timer');
-            const resendBtn = document.getElementById('resend-btn');
+            <div class="numpad">
+                <div class="numpad-row">
+                    <button class="num-btn" onclick="enterPin('1')">1</button>
+                    <button class="num-btn" onclick="enterPin('2')">2</button>
+                    <button class="num-btn" onclick="enterPin('3')">3</button>
+                </div>
+                <div class="numpad-row">
+                    <button class="num-btn" onclick="enterPin('4')">4</button>
+                    <button class="num-btn" onclick="enterPin('5')">5</button>
+                    <button class="num-btn" onclick="enterPin('6')">6</button>
+                </div>
+                <div class="numpad-row">
+                    <button class="num-btn" onclick="enterPin('7')">7</button>
+                    <button class="num-btn" onclick="enterPin('8')">8</button>
+                    <button class="num-btn" onclick="enterPin('9')">9</button>
+                </div>
+                <div class="numpad-row">
+                    <button class="num-btn invisible"></button>
+                    <button class="num-btn" onclick="enterPin('0')">0</button>
+                    <button class="num-btn delete-btn" onclick="deletePin()">⌫</button>
+                </div>
+            </div>
             
-            resendBtn.disabled = true;
+            <button class="primary-btn" id="continuePin" onclick="confirmPin()" disabled>Continue</button>
+        </div>
+    </div>
+
+    <!-- Login Screen with PIN -->
+    <div id="loginScreen" class="screen">
+        <div class="container">
+            <div class="header">
+                <div class="login-icon">🛡️</div>
+                <h1 class="title">Secure Login</h1>
+                <p class="subtitle">Enter your 4-digit PIN</p>
+            </div>
             
-            timerInterval = setInterval(() => {
-                otpTimer--;
-                const minutes = Math.floor(otpTimer / 60);
-                const seconds = otpTimer % 60;
-                timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                if (otpTimer <= 0) {
-                    clearInterval(timerInterval);
-                    resendBtn.disabled = false;
-                    timerEl.textContent = 'Время истекло';
-                }
-            }, 1000);
-        }
-
-        function resendOTP() {
-            // Clear OTP inputs
-            const otpInputs = document.querySelectorAll('.otp-input');
-            otpInputs.forEach(input => {
-                input.value = '';
-                input.classList.remove('filled');
-            });
+            <div class="pin-dots">
+                <div class="pin-dot" id="loginPinDot1"></div>
+                <div class="pin-dot" id="loginPinDot2"></div>
+                <div class="pin-dot" id="loginPinDot3"></div>
+                <div class="pin-dot" id="loginPinDot4"></div>
+            </div>
             
-            startOTPTimer();
-        }
-
-        function verifyOTP() {
-            const otpInputs = document.querySelectorAll('.otp-input');
-            const otpValue = Array.from(otpInputs).map(input => input.value).join('');
+            <div class="numpad">
+                <div class="numpad-row">
+                    <button class="num-btn" onclick="enterLoginPin('1')">1</button>
+                    <button class="num-btn" onclick="enterLoginPin('2')">2</button>
+                    <button class="num-btn" onclick="enterLoginPin('3')">3</button>
+                </div>
+                <div class="numpad-row">
+                    <button class="num-btn" onclick="enterLoginPin('4')">4</button>
+                    <button class="num-btn" onclick="enterLoginPin('5')">5</button>
+                    <button class="num-btn" onclick="enterLoginPin('6')">6</button>
+                </div>
+                <div class="numpad-row">
+                    <button class="num-btn" onclick="enterLoginPin('7')">7</button>
+                    <button class="num-btn" onclick="enterLoginPin('8')">8</button>
+                    <button class="num-btn" onclick="enterLoginPin('9')">9</button>
+                </div>
+                <div class="numpad-row">
+                    <button class="num-btn invisible"></button>
+                    <button class="num-btn" onclick="enterLoginPin('0')">0</button>
+                    <button class="num-btn delete-btn" onclick="deleteLoginPin()">⌫</button>
+                </div>
+            </div>
             
-            if (otpValue.length !== 6) {
-                showError(document.querySelector('.otp-container'), 'Введите полный код');
-                return;
-            }
+            <div class="login-options">
+                <button class="biometric-btn" onclick="useBiometric()">
+                    <span class="biometric-icon">👆</span>
+                    Use Touch ID
+                </button>
+                <button class="link-btn" onclick="forgotPin()">Forgot PIN?</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Home Screen -->
+    <div id="homeScreen" class="screen">
+        <div class="container">
+            <div class="header-home">
+                <div class="greeting">
+                    <span id="greetingText">Good morning</span>
+                    <span id="userName">John Doe</span>
+                </div>
+                <div class="profile-pic" id="profilePic">
+                    <img src="" alt="Profile" id="profileImage">
+                </div>
+            </div>
             
-            // Simulate API verification
-            showLoading();
-            setTimeout(() => {
-                hideLoading();
-                if (otpValue === '123456') { // Demo code
-                    clearInterval(timerInterval);
-                    showSuccess();
-                    setTimeout(() => {
-                        navigateToScreen('set-pin');
-                    }, 1500);
-                } else {
-                    showError(document.querySelector('.otp-container'), 'Неверный код');
-                }
-            }, 2000);
-        }
-
-        // PIN Functions
-        function addPinDigit(digit) {
-            if (tempPin.length < 4) {
-                tempPin += digit;
-                updatePinDots('set-pin');
-                
-                if (tempPin.length === 4) {
-                    setTimeout(async () => {
-                        try {
-                            // Save user to database
-                            await db.saveUser(currentUser.phone, tempPin);
-                            await db.saveSession(currentUser.phone);
-                            
-                            currentUser.pin = tempPin;
-                            tempPin = '';
-                            showSuccess();
-                            
-                            setTimeout(() => {
-                                document.getElementById('user-phone-display').textContent = currentUser.phone;
-                                navigateToScreen('home');
-                            }, 1500);
-                        } catch (error) {
-                            showError(document.querySelector('#set-pin .pin-dots-container'), 'Ошибка сохранения');
-                            tempPin = '';
-                            updatePinDots('set-pin');
-                        }
-                    }, 300);
-                }
-            }
-        }
-
-        function removePinDigit() {
-            if (tempPin.length > 0) {
-                tempPin = tempPin.slice(0, -1);
-                updatePinDots('set-pin');
-            }
-        }
-
-        function addLoginPinDigit(digit) {
-            if (loginPin.length < 4) {
-                loginPin += digit;
-                updatePinDots('login-pin');
-                
-                if (loginPin.length === 4) {
-                    setTimeout(async () => {
-                        if (loginPin === currentUser.pin) {
-                            try {
-                                await db.saveSession(currentUser.phone);
-                                loginPin = '';
-                                showSuccess();
-                                setTimeout(() => {
-                                    document.getElementById('user-phone-display').textContent = currentUser.phone;
-                                    navigateToScreen('home');
-                                }, 1500);
-                            } catch (error) {
-                                showError(document.querySelector('#login-pin .pin-dots-container'), 'Ошибка входа');
-                            }
-                        } else {
-                            loginPin = '';
-                            updatePinDots('login-pin');
-                            showError(document.querySelector('#login-pin .pin-dots-container'), 'Неверный ПИН-код');
-                        }
-                    }, 300);
-                }
-            }
-        }
-
-        function removeLoginPinDigit() {
-            if (loginPin.length > 0) {
-                loginPin = loginPin.slice(0, -1);
-                updatePinDots('login-pin');
-            }
-        }
-
-        function updatePinDots(screenId) {
-            const dots = document.querySelectorAll(`#${screenId} .pin-dot`);
-            const pinValue = screenId === 'set-pin' ? tempPin : loginPin;
+            <div class="cards-section">
+                <div class="section-header">
+                    <h3>My Cards</h3>
+                    <button class="link-btn" onclick="showAllCards()">View All</button>
+                </div>
+                <div class="cards-container" id="cardsContainer">
+                    <div class="add-card-btn" onclick="addCard()">
+                        <div class="add-icon">+</div>
+                        <span>Add Card</span>
+                    </div>
+                </div>
+            </div>
             
-            dots.forEach((dot, index) => {
-                if (index < pinValue.length) {
-                    dot.classList.add('filled');
-                } else {
-                    dot.classList.remove('filled');
-                }
-            });
-        }
-
-        // Inactivity Detection
-        function setupInactivityDetection() {
-            const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+            <div class="actions-section">
+                <div class="action-buttons">
+                    <button class="action-btn disabled">
+                        <div class="action-icon">📤</div>
+                        <span>Send</span>
+                    </button>
+                    <button class="action-btn disabled">
+                        <div class="action-icon">📥</div>
+                        <span>Receive</span>
+                    </button>
+                    <button class="action-btn disabled">
+                        <div class="action-icon">📊</div>
+                        <span>Top Up</span>
+                    </button>
+                    <button class="action-btn disabled">
+                        <div class="action-icon">📷</div>
+                        <span>Scan</span>
+                    </button>
+                </div>
+                <button class="send-money-btn" onclick="sendMoney()">
+                    <div class="send-icon">💸</div>
+                    <span>Send Money</span>
+                </button>
+            </div>
             
-            events.forEach(event => {
-                document.addEventListener(event, resetActivity, true);
-            });
+            <div class="recent-transfers">
+                <div class="section-header">
+                    <h3>Recent Transfers</h3>
+                    <button class="link-btn" onclick="showAllHistory()">See All</button>
+                </div>
+                <div class="transfers-list" id="transfersList">
+                    <!-- Transfers will be populated by JavaScript -->
+                </div>
+            </div>
             
-            checkInactivity();
-        }
-
-        function resetActivity() {
-            lastActivity = Date.now();
-        }
-
-        function checkInactivity() {
-            setInterval(async () => {
-                const now = Date.now();
-                const inactiveTime = now - lastActivity;
-                
-                // 2 minutes of inactivity
-                if (inactiveTime > 120000 && currentScreen === 'home' && currentUser) {
-                    await db.clearSession();
-                    navigateToScreen('login-pin');
-                }
-            }, 10000); // Check every 10 seconds
-        }
-
-        // Utility Functions
-        function showLoading() {
-            const loadingEl = document.createElement('div');
-            loadingEl.className = 'loading';
-            loadingEl.id = 'loading-spinner';
+            <div class="exchange-rates">
+                <h3>Exchange Rates</h3>
+                <div class="rates-list" id="ratesList">
+                    <!-- Rates will be populated by JavaScript -->
+                </div>
+            </div>
             
-            const activeScreen = document.querySelector('.screen.active');
-            activeScreen.appendChild(loadingEl);
-        }
+            <div class="promotions">
+                <div class="promo-card">
+                    <h4>Cashback 5%</h4>
+                    <p>Get 5% cashback on all online purchases this month!</p>
+                    <button class="promo-btn">Learn More</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <button class="nav-btn active" onclick="switchTab('home')">
+                <div class="nav-icon">🏠</div>
+                <span>Home</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('transfers')">
+                <div class="nav-icon">💸</div>
+                <span>Transfers</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('history')">
+                <div class="nav-icon">📝</div>
+                <span>History</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('profile')">
+                <div class="nav-icon">👤</div>
+                <span>Profile</span>
+            </button>
+        </div>
+    </div>
 
-        function hideLoading() {
-            const loadingEl = document.getElementById('loading-spinner');
-            if (loadingEl) {
-                loadingEl.remove();
-            }
-        }
+    <!-- Add Card Modal -->
+    <div id="addCardModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Card</h3>
+                <button class="close-btn" onclick="closeModal('addCardModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                </div>
+                <div class="form-group">
+                    <label>Expiry Date</label>
+                    <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5">
+                </div>
+                <div class="form-group">
+                    <label>Cardholder Name</label>
+                    <input type="text" id="cardholderName" placeholder="John Doe">
+                </div>
+                <div class="card-info" id="cardInfo" style="display: none;">
+                    <p><strong>Bank:</strong> <span id="bankName"></span></p>
+                    <p><strong>Type:</strong> <span id="cardType"></span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="primary-btn" onclick="saveCard()">Add Card</button>
+            </div>
+        </div>
+    </div>
 
-        function showSuccess() {
-            const activeScreen = document.querySelector('.screen.active');
-            const successEl = document.createElement('div');
-            successEl.className = 'success-check';
-            successEl.id = 'success-check';
-            
-            activeScreen.appendChild(successEl);
-            
-            setTimeout(() => {
-                successEl.remove();
-            }, 2000);
-        }
-
-        function showError(element, message) {
-            element.classList.add('error-shake');
-            
-            // Show error message
-            const errorEl = document.createElement('div');
-            errorEl.style.cssText = `
-                position: fixed;
-                top: 80px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: #ff3b30;
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: 500;
-                z-index: 1000;
-                animation: slideInDown 0.3s ease-out;
-                max-width: 280px;
-                text-align: center;
-            `;
-            errorEl.textContent = message;
-            
-            document.body.appendChild(errorEl);
-            
-            setTimeout(() => {
-                element.classList.remove('error-shake');
-                errorEl.remove();
-            }, 3000);
-        }
-
-        // Haptic Feedback (for Telegram Mini Apps)
-        function vibrate(duration = 50) {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-            } else if (navigator.vibrate) {
-                navigator.vibrate(duration);
-            }
-        }
-
-        // Add haptic feedback to buttons
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('btn-primary') || 
-                e.target.classList.contains('pin-key') ||
-                e.target.classList.contains('action-btn')) {
-                vibrate();
-            }
-        });
-
-        // Telegram WebApp initialization
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
