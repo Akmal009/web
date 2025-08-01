@@ -1,3 +1,43 @@
+// Telegram Mini App подключение
+let tg = window.Telegram.WebApp;
+tg.expand(); // растягивает на весь экран
+tg.ready();  // сообщает Telegram, что WebApp загружен
+
+// Получение initData
+let initDataUnsafe = tg.initDataUnsafe;
+let userId = initDataUnsafe?.user?.id;
+
+if (!userId) {
+    alert("Ошибка: Telegram user ID не найден. Попробуйте снова открыть Mini App.");
+    throw new Error("Telegram user ID not available");
+}
+
+// Пример: сохраняем user_id глобально
+window.userId = userId;
+
+// Пример: отправка user_id при запросе
+async function registerUserOnBackend() {
+    try {
+        await fetch("/api/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                username: initDataUnsafe.user.username,
+                first_name: initDataUnsafe.user.first_name,
+                last_name: initDataUnsafe.user.last_name,
+                language_code: initDataUnsafe.user.language_code
+            })
+        });
+    } catch (err) {
+        console.error("Ошибка регистрации:", err);
+    }
+}
+
+registerUserOnBackend(); // авто-регистрация при входе
+
 // History functionality
 let currentFilter = 'all';
 
