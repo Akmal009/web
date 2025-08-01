@@ -1,4 +1,608 @@
-// Global variables
+// History functionality
+let currentFilter = 'all';
+
+function showHistoryScreen() {
+    updateBalanceSummary();
+    displayTransactionHistory();
+    showScreen('historyScreen');
+}
+
+function updateBalanceSummary() {
+    let totalBalance = 0;
+    let monthlyChange = 0;
+    
+    // Calculate total balance from all cards
+    userCards.forEach(card => {
+        totalBalance += card.balance;
+    });
+    
+    // Calculate monthly change from transactions
+    const currentMonth = new Date().getMonth();
+    userTransactions.forEach(transaction => {
+        const transactionDate = new Date(transaction.date);
+        if (transactionDate.getMonth() === currentMonth) {
+            monthlyChange += transaction.amount;
+        }
+    });
+    
+    document.getElementById('totalBalance').textContent = formatCurrency(totalBalance) + ' UZS';
+    
+    const monthlyChangeEl = document.getElementById('monthlyChange');
+    monthlyChangeEl.textContent = (monthlyChange >= 0 ? '+' : '') + formatCurrency(Math.abs(monthlyChange)) + ' UZS';
+    monthlyChangeEl.className = 'balance-change ' + (monthlyChange >= 0 ? 'positive' : 'negative');
+}
+
+function filterTransactions(type) {
+    currentFilter = type;
+    
+    // Update filter tabs
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    displayTransactionHistory();
+}
+
+function displayTransactionHistory() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+    
+    let filteredTransactions = userTransactions;
+    
+    // Apply filter
+    if (currentFilter === 'income') {
+        filteredTransactions = userTransactions.filter(t => t.amount > 0);
+    } else if (currentFilter === 'outcome') {
+        filteredTransactions = userTransactions.filter(t => t.amount < 0);
+    }
+    
+    if (filteredTransactions.length === 0) {
+        historyList.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📝</div>
+                <div class="empty-title">No transactions</div>
+                <div class="empty-subtitle">Your transaction history will appear here</div>
+            </div>
+        `;
+        return;
+    }
+    
+    filteredTransactions.forEach(transaction => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        historyItem.onclick = () => showTransactionDetail(transaction);
+        
+        const transactionType = transaction.amount > 0 ? 'income' : (transaction.type === 'transfer' ? 'transfer' : 'outcome');
+        const icon = getTransactionIcon(transactionType);
+        
+        historyItem.innerHTML = `
+            <div class="history-icon ${transactionType}">
+                ${icon}
+            </div>
+            <div class="history-details">
+                <div class="history-title">${transaction.name}</div>
+                <div class="history-date">${formatDate(transaction.date)}</div>
+            </div>
+            <div class="history-amount-container">
+                <div class="history-amount ${transaction.amount > 0 ? 'positive' : 'negative'}">
+                    ${transaction.amount > 0 ? '+' : ''}${formatCurrency(Math.abs(transaction.amount))} UZS
+                </div>
+                <div class="history-status">${transaction.status || 'Completed'}</div>
+            </div>
+        `;
+        
+        historyList.appendChild(historyItem);
+    });
+}
+
+function getTransactionIcon(type) {
+    switch (type) {
+        case 'income':
+            return '📥';
+        case 'outcome':
+            return '📤';
+        case 'transfer':
+            return '💸';
+        default:
+            return '💳';
+    }
+}
+
+function showTransactionDetail(transaction) {
+    // Update modal content
+    document.getElementById('detailAmount').textContent = 
+        (transaction.amount > 0 ? '+' : '') + formatCurrency(Math.abs(transaction.amount)) + ' UZS';
+    document.getElementById('detailAmount').className = 
+        'transaction-amount-detail ' + (transaction.amount > 0 ? 'positive' : 'negative');
+    
+    document.getElementById('detailId').textContent = transaction.transactionId || transaction.id;
+    document.getElementById('detailDate').textContent = new Date(transaction.date).toLocaleString();
+    document.getElementById('detailFrom').textContent = selectedFromCard ? maskCardNumber(selectedFromCard.number) : 'Your Card';
+    document.getElementById('detailTo').textContent = transaction.name;
+    document.getElementById('detailFee').textContent = formatCurrency(transaction.fee || 0) + ' UZS';
+    
+    document.getElementById('transactionDetailModal').classList.add('active');
+}
+
+function downloadTransactionReceipt() {
+    showNotification('Receipt downloaded successfully', 'success');
+    closeModal('transactionDetailModal');
+}
+
+// Profile functionality
+function showProfileScreen() {
+    updateProfileInfo();
+    updateThemeDisplay();
+    updateLanguageDisplay();
+    showScreen('profileScreen');
+}
+
+function updateProfileInfo() {
+    if (currentUser) {
+        const fullName = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim();
+        document.getElementById('profileName').textContent = fullName || 'User';
+        document.getElementById('profilePhone').textContent = currentUser.phoneNumber || '+998 XX XXX XX XX';
+        
+        // Update profile photo
+        const profilePhotoImg = document.getElementById('profilePhotoImg');
+        if (currentUser.photoUrl) {
+            profilePhotoImg.src = currentUser.photoUrl;
+            profilePhotoImg.style.display = 'block';
+        } else {
+            profilePhotoImg.style.display = 'none';
+            // Show initials instead
+            const profilePhoto = document.getElementById('profilePhoto');
+            profilePhoto.textContent = fullName.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
+        }
+    }
+}
+
+function updateThemeDisplay() {
+    const isDark = document.body.classList.contains('dark');
+    document.getElementById('currentTheme').textContent = isDark ? 'Dark' : 'Light';
+}
+
+function updateLanguageDisplay() {
+    const langNames = {
+        'ru': 'Русский',
+        'uz': "O'zbek",
+        'en': 'English',
+        'kk': 'Қазақша'
+    };
+    
+    const currentLang = currentUser?.languageCode || 'en';
+    document.getElementById('currentLanguage').textContent = langNames[currentLang] || 'English';
+    
+    // Update language selector
+    document.querySelectorAll('.language-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    
+    const selectedLangOption = document.querySelector(`[onclick="changeLanguage('${currentLang}')"]`);
+    if (selectedLangOption) {
+        selectedLangOption.parentElement.classList.add('selected');
+    }
+}
+
+function showLanguageSelector() {
+    updateLanguageDisplay();
+    document.getElementById('languageSelectorModal').classList.add('active');
+}
+
+function changeLanguage(langCode) {
+    if (currentUser) {
+        currentUser.languageCode = langCode;
+        saveUserData();
+        
+        // Update displays
+        updateLanguageDisplay();
+        updateGreeting();
+        
+        showNotification('Language updated successfully', 'success');
+        closeModal('languageSelectorModal');
+        
+        // Send update to Telegram bot if available
+        if (window.Telegram && window.Telegram.WebApp) {
+            // In a real implementation, you would send this to your backend
+            console.log('Language updated:', langCode);
+        }
+    }
+}
+
+function toggleAppTheme() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('minibank_theme', isDark ? 'dark' : 'light');
+    updateThemeDisplay();
+    showNotification(`Switched to ${isDark ? 'dark' : 'light'} theme`, 'success');
+}
+
+function confirmLogout() {
+    document.getElementById('logoutConfirmModal').classList.add('active');
+}
+
+function performLogout() {
+    // Clear user session data
+    if (currentUser) {
+        currentUser.isVerified = false;
+        currentUser.pin = null;
+        saveUserData();
+    }
+    
+    // Clear cards and transactions
+    userCards = [];
+    userTransactions = [];
+    selectedFromCard = null;
+    transferData = {};
+    
+    // Reset UI state
+    currentScreen = 'phoneRegistration';
+    
+    closeModal('logoutConfirmModal');
+    showNotification('Logged out successfully', 'success');
+    
+    // Redirect to registration
+    setTimeout(() => {
+        showScreen('phoneRegistration');
+    }, 1000);
+}
+
+// Update navigation function to include new screens
+function switchTab(tab) {
+    // Update navigation
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+    
+    // Handle tab switching logic
+    switch(tab) {
+        case 'home':
+            showScreen('homeScreen');
+            break;
+        case 'transfers':
+            sendMoney();
+            break;
+        case 'history':
+            showHistoryScreen();
+            break;
+        case 'profile':
+            showProfileScreen();
+            break;
+    }
+}
+
+// Add empty state styles
+const additionalStyles = `
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #86868b;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1d1d1f;
+}
+
+body.dark .empty-title {
+    color: #fff;
+}
+
+.empty-subtitle {
+    font-size: 14px;
+    color: #86868b;
+}
+
+/* Additional responsive styles */
+@media (max-width: 480px) {
+    .profile-header {
+        padding: 16px;
+        gap: 16px;
+    }
+    
+    .profile-photo {
+        width: 60px;
+        height: 60px;
+        border-radius: 30px;
+        font-size: 24px;
+    }
+    
+    .profile-name {
+        font-size: 20px;
+    }
+    
+    .balance-card {
+        padding: 16px;
+        gap: 16px;
+    }
+    
+    .balance-value {
+        font-size: 20px;
+    }
+    
+    .balance-change {
+        font-size: 18px;
+    }
+}
+
+/* Enhanced animations */
+@keyframes slideInFromRight {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInFromLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.history-item {
+    animation: slideInFromRight 0.3s ease;
+    animation-fill-mode: both;
+}
+
+.history-item:nth-child(1) { animation-delay: 0.1s; }
+.history-item:nth-child(2) { animation-delay: 0.2s; }
+.history-item:nth-child(3) { animation-delay: 0.3s; }
+.history-item:nth-child(4) { animation-delay: 0.4s; }
+.history-item:nth-child(5) { animation-delay: 0.5s; }
+
+.menu-item {
+    animation: slideInFromLeft 0.3s ease;
+    animation-fill-mode: both;
+}
+
+.menu-section:nth-child(1) .menu-item { animation-delay: 0.1s; }
+.menu-section:nth-child(2) .menu-item { animation-delay: 0.2s; }
+.menu-section:nth-child(3) .menu-item { animation-delay: 0.3s; }
+.menu-section:nth-child(4) .menu-item { animation-delay: 0.4s; }
+
+/* Success states */
+.success-animation {
+    animation: successPulse 0.6s ease;
+}
+
+@keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Loading states for async operations */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    min-width: 200px;
+}
+
+body.dark .loading-content {
+    background: #2c2c2e;
+}
+
+.loading-spinner-small {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007AFF;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px auto;
+}
+
+.loading-text {
+    font-size: 16px;
+    color: #86868b;
+    font-weight: 500;
+}
+`;
+
+// Add the additional styles to the document
+const styleElement = document.createElement('style');
+styleElement.textContent = additionalStyles;
+document.head.appendChild(styleElement);
+
+// Enhanced notification system with different types
+function showNotification(message, type = 'info', duration = 3000) {
+    // Remove existing notifications
+    document.querySelectorAll('.notification').forEach(n => n.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    
+    // Add icon based on type
+    const icons = {
+        'success': '✅',
+        'error': '❌',
+        'warning': '⚠️',
+        'info': 'ℹ️'
+    };
+    
+    notification.innerHTML = `
+        <span class="notification-icon">${icons[type] || icons.info}</span>
+        <span class="notification-text">${message}</span>
+    `;
+    
+    // Enhanced styling
+    Object.assign(notification.style, {
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: type === 'error' ? '#FF3B30' : 
+                   type === 'success' ? '#30D158' : 
+                   type === 'warning' ? '#FF9500' : '#007AFF',
+        color: 'white',
+        padding: '16px 24px',
+        borderRadius: '12px',
+        fontSize: '14px',
+        fontWeight: '500',
+        zIndex: '10000',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+        maxWidth: '320px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        animation: 'slideDown 0.3s ease',
+        backdropFilter: 'blur(10px)'
+    });
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideUp 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }
+    }, duration);
+}
+
+// Enhanced loading overlay
+function showLoading(text = 'Loading...') {
+    hideLoading(); // Remove any existing loading
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'loading-overlay';
+    overlay.id = 'loadingOverlay';
+    
+    overlay.innerHTML = `
+        <div class="loading-content">
+            <div class="loading-spinner-small"></div>
+            <div class="loading-text">${text}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+// Enhanced card validation with more card types
+function getCardInfo(cardNumber) {
+    const firstDigit = cardNumber[0];
+    const firstTwo = cardNumber.substring(0, 2);
+    const firstFour = cardNumber.substring(0, 4);
+    const firstSix = cardNumber.substring(0, 6);
+    
+    let type = 'Unknown';
+    let bank = 'Unknown Bank';
+    
+    // Visa
+    if (firstDigit === '4') {
+        type = 'Visa';
+        bank = 'International Bank';
+    }
+    // Mastercard
+    else if ((firstTwo >= '51' && firstTwo <= '55') || (firstSix >= '222100' && firstSix <= '272099')) {
+        type = 'Mastercard';
+        bank = 'International Bank';
+    }
+    // American Express
+    else if (['34', '37'].includes(firstTwo)) {
+        type = 'American Express';
+        bank = 'International Bank';
+    }
+    // Uzcard
+    else if (firstFour === '8600') {
+        type = 'Uzcard';
+        bank = 'Uzcard Bank';
+    }
+    // Humo
+    else if (firstFour === '9860') {
+        type = 'Humo';
+        bank = 'Humo Bank';
+    }
+    // UnionPay
+    else if (firstTwo === '62') {
+        type = 'UnionPay';
+        bank = 'International Bank';
+    }
+    
+    return { type, bank };
+}
+
+// Enhanced date formatting with localization
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    const langCode = currentUser?.languageCode || 'en';
+    
+    const translations = {
+        'en': { today: 'Today', yesterday: 'Yesterday' },
+        'ru': { today: 'Сегодня', yesterday: 'Вчера' },
+        'uz': { today: 'Bugun', yesterday: 'Kecha' },
+        'kk': { today: 'Бүгін', yesterday: 'Кеше' }
+    };
+    
+    if (diffDays === 0) {
+        return translations[langCode].today + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    } else if (diffDays === 1) {
+        return translations[langCode].yesterday;
+    } else if (diffDays < 7) {
+        return date.toLocaleDateString(langCode, { weekday: 'long' });
+    } else {
+        return date.toLocaleDateString(langCode, { 
+            month: 'short', 
+            day: 'numeric',
+            year: diffDays > 365 ? 'numeric' : undefined
+        });
+    }
+}
+
+// Performance optimization - debounce function for input handlers
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Apply debouncing to expensive operations
+const debouncedRecipientInput = debounce(getRecipientInfo, 500);
+const debouncedFeeCalculation = debounce(calculateFee, 300);
+        // Global variables
 let currentUser = null;
 let currentScreen = 'phoneRegistration';
 let currentPin = '';
@@ -528,10 +1132,359 @@ function formatCurrency(amount) {
     return new Intl.NumberFormat('en-US').format(amount);
 }
 
-// Transfers and transactions
+// Transfer functionality
+let selectedFromCard = null;
+let transferData = {};
+let confirmTransferPin = '';
+
+// Send money function
 function sendMoney() {
-    // This will be implemented in next stages
-    showNotification('Send Money feature will be available soon', 'info');
+    if (userCards.length === 0) {
+        showNotification('Please add a card first', 'error');
+        return;
+    }
+    
+    // Reset transfer data
+    transferData = {};
+    selectedFromCard = null;
+    document.getElementById('recipientCard').value = '';
+    document.getElementById('transferAmount').value = '';
+    document.getElementById('recipientInfo').style.display = 'none';
+    document.getElementById('feeInfo').style.display = 'none';
+    document.getElementById('continueTransfer').disabled = true;
+    
+    // Update from card selector to show first card
+    if (userCards.length > 0) {
+        selectCard(userCards[0]);
+    }
+    
+    showScreen('transferScreen');
+}
+
+function selectFromCard() {
+    if (userCards.length === 0) {
+        showNotification('No cards available', 'error');
+        return;
+    }
+    
+    // Populate cards list
+    const cardsList = document.getElementById('cardsList');
+    cardsList.innerHTML = '';
+    
+    userCards.forEach(card => {
+        const cardOption = document.createElement('div');
+        cardOption.className = `card-option ${selectedFromCard && selectedFromCard.id === card.id ? 'selected' : ''}`;
+        cardOption.onclick = () => selectCard(card);
+        
+        cardOption.innerHTML = `
+            <div class="card-option-icon">${card.type.substring(0, 4)}</div>
+            <div class="card-option-details">
+                <div class="card-option-number">${maskCardNumber(card.number)}</div>
+                <div class="card-option-balance">${formatCurrency(card.balance)} UZS</div>
+            </div>
+        `;
+        
+        cardsList.appendChild(cardOption);
+    });
+    
+    document.getElementById('selectCardModal').classList.add('active');
+}
+
+function selectCard(card) {
+    selectedFromCard = card;
+    transferData.fromCard = card;
+    
+    // Update UI
+    document.getElementById('fromCardName').textContent = maskCardNumber(card.number);
+    document.getElementById('fromCardBalance').textContent = `Balance: ${formatCurrency(card.balance)} UZS`;
+    
+    closeModal('selectCardModal');
+    checkTransferForm();
+}
+
+function handleRecipientInput(input) {
+    const value = input.value.replace(/\s/g, '');
+    
+    // Format card number
+    let formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+    input.value = formattedValue;
+    
+    if (value.length >= 6) {
+        // Show recipient info
+        getRecipientInfo(value);
+    } else {
+        document.getElementById('recipientInfo').style.display = 'none';
+        transferData.toCard = null;
+        checkTransferForm();
+    }
+}
+
+function getRecipientInfo(cardNumber) {
+    // Simulate API call to get recipient info
+    setTimeout(() => {
+        const cardInfo = getCardInfo(cardNumber);
+        const recipientNames = ['John Smith', 'Sarah Johnson', 'Mike Wilson', 'Emma Davis', 'Alex Brown'];
+        const recipientName = recipientNames[Math.abs(hashCode(cardNumber)) % recipientNames.length];
+        
+        transferData.toCard = {
+            number: cardNumber,
+            holder: recipientName,
+            bank: cardInfo.bank,
+            type: cardInfo.type
+        };
+        
+        // Update UI
+        document.getElementById('recipientName').textContent = recipientName;
+        document.getElementById('recipientBank').textContent = `${cardInfo.bank} • ${cardInfo.type}`;
+        document.getElementById('recipientAvatar').textContent = recipientName.split(' ').map(n => n[0]).join('');
+        document.getElementById('recipientInfo').style.display = 'flex';
+        
+        checkTransferForm();
+    }, 500);
+}
+
+function hashCode(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+}
+
+function calculateFee() {
+    const amount = parseFloat(document.getElementById('transferAmount').value) || 0;
+    
+    if (amount > 0) {
+        const fee = Math.max(amount * 0.01, 1000); // 1% fee, minimum 1000 UZS
+        const total = amount + fee;
+        
+        transferData.amount = amount;
+        transferData.fee = fee;
+        transferData.total = total;
+        
+        // Update UI
+        document.getElementById('transferAmountDisplay').textContent = formatCurrency(amount) + ' UZS';
+        document.getElementById('feeAmount').textContent = formatCurrency(fee) + ' UZS';
+        document.getElementById('totalAmount').textContent = formatCurrency(total) + ' UZS';
+        document.getElementById('feeInfo').style.display = 'block';
+        
+        // Check if user has sufficient balance
+        if (selectedFromCard && selectedFromCard.balance < total) {
+            showNotification('Insufficient balance', 'error');
+            document.getElementById('continueTransfer').disabled = true;
+            return;
+        }
+    } else {
+        document.getElementById('feeInfo').style.display = 'none';
+        transferData.amount = 0;
+        transferData.fee = 0;
+        transferData.total = 0;
+    }
+    
+    checkTransferForm();
+}
+
+function checkTransferForm() {
+    const hasFromCard = selectedFromCard !== null;
+    const hasToCard = transferData.toCard !== null;
+    const hasAmount = transferData.amount > 0;
+    const hasSufficientBalance = selectedFromCard && transferData.total <= selectedFromCard.balance;
+    
+    document.getElementById('continueTransfer').disabled = !(hasFromCard && hasToCard && hasAmount && hasSufficientBalance);
+}
+
+function reviewTransfer() {
+    if (!selectedFromCard || !transferData.toCard || !transferData.amount) {
+        showNotification('Please complete all fields', 'error');
+        return;
+    }
+    
+    // Update confirmation screen
+    document.getElementById('confirmAmount').textContent = formatCurrency(transferData.amount) + ' UZS';
+    
+    // Update from card info
+    const fromCardEl = document.getElementById('confirmFromCard');
+    fromCardEl.innerHTML = `
+        <span class="card-number">${maskCardNumber(selectedFromCard.number)}</span>
+        <span class="card-type">Available</span>
+        <span class="balance">${formatCurrency(selectedFromCard.balance)} UZS</span>
+    `;
+    
+    // Update recipient info
+    const recipientEl = document.getElementById('confirmRecipient');
+    recipientEl.innerHTML = `
+        <div class="recipient-avatar-small">${transferData.toCard.holder.split(' ').map(n => n[0]).join('')}</div>
+        <div class="recipient-info-small">
+            <div class="recipient-name-small">${transferData.toCard.holder}</div>
+            <div class="recipient-email">${maskCardNumber(transferData.toCard.number)}</div>
+        </div>
+        <div class="verified-badge">✓</div>
+    `;
+    
+    // Update transaction details
+    document.getElementById('confirmTransferAmount').textContent = formatCurrency(transferData.amount) + ' UZS';
+    document.getElementById('confirmFee').textContent = formatCurrency(transferData.fee) + ' UZS';
+    document.getElementById('confirmTotal').textContent = formatCurrency(transferData.total) + ' UZS';
+    
+    showScreen('transferConfirm');
+}
+
+function confirmWithPin() {
+    confirmTransferPin = '';
+    updatePinDots('confirmPinDot', 0);
+    document.getElementById('pinConfirmModal').classList.add('active');
+}
+
+function enterConfirmPin(digit) {
+    if (confirmTransferPin.length < 4) {
+        confirmTransferPin += digit;
+        updatePinDots('confirmPinDot', confirmTransferPin.length);
+        
+        if (confirmTransferPin.length === 4) {
+            setTimeout(verifyTransferPin, 300);
+        }
+    }
+}
+
+function deleteConfirmPin() {
+    if (confirmTransferPin.length > 0) {
+        confirmTransferPin = confirmTransferPin.slice(0, -1);
+        updatePinDots('confirmPinDot', confirmTransferPin.length);
+    }
+}
+
+function verifyTransferPin() {
+    if (currentUser && confirmTransferPin === currentUser.pin) {
+        closeModal('pinConfirmModal');
+        processTransfer();
+    } else {
+        showNotification(translations[currentUser?.languageCode || 'en']['invalid_pin'], 'error');
+        confirmTransferPin = '';
+        updatePinDots('confirmPinDot', 0);
+        
+        // Add shake animation
+        const pinDots = document.querySelector('#pinConfirmModal .pin-dots');
+        pinDots.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => {
+            pinDots.style.animation = '';
+        }, 500);
+    }
+}
+
+function processTransfer() {
+    // Generate transaction ID
+    const transactionId = 'TXN' + Date.now().toString().slice(-8);
+    
+    // Update processing screen
+    document.getElementById('processingAmount').textContent = formatCurrency(transferData.amount) + ' UZS';
+    document.getElementById('processingRecipient').textContent = transferData.toCard.holder;
+    document.getElementById('processingId').textContent = transactionId;
+    
+    showScreen('transferProcessing');
+    
+    // Simulate processing steps
+    const steps = [
+        'Initializing transfer...',
+        'Verifying recipient...',
+        'Processing payment...',
+        'Updating balances...',
+        'Transfer completed!'
+    ];
+    
+    let currentStep = 0;
+    const progressBar = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    
+    const interval = setInterval(() => {
+        currentStep++;
+        const progress = (currentStep / steps.length) * 100;
+        
+        progressBar.style.width = progress + '%';
+        progressText.textContent = steps[currentStep - 1] || 'Completed!';
+        
+        if (currentStep >= steps.length) {
+            clearInterval(interval);
+            setTimeout(() => {
+                completeTransfer(transactionId);
+            }, 1000);
+        }
+    }, 1000);
+}
+
+function completeTransfer(transactionId) {
+    // Update user's card balance
+    selectedFromCard.balance -= transferData.total;
+    saveUserCards();
+    
+    // Add transaction to history
+    const transaction = {
+        id: Date.now(),
+        transactionId: transactionId,
+        name: transferData.toCard.holder,
+        amount: -transferData.amount,
+        fee: transferData.fee,
+        date: new Date().toISOString(),
+        type: 'transfer',
+        status: 'completed'
+    };
+    
+    userTransactions.unshift(transaction);
+    saveUserTransactions();
+    
+    // Update success screen
+    document.getElementById('successAmount').textContent = formatCurrency(transferData.amount) + ' UZS';
+    document.getElementById('successAvatar').textContent = transferData.toCard.holder.split(' ').map(n => n[0]).join('');
+    document.getElementById('successRecipientName').textContent = transferData.toCard.holder;
+    document.getElementById('successRecipientId').textContent = maskCardNumber(transferData.toCard.number);
+    document.getElementById('successFee').textContent = formatCurrency(transferData.fee) + ' UZS';
+    document.getElementById('successTax').textContent = '0 UZS';
+    document.getElementById('successTransactionId').textContent = transactionId;
+    
+    showScreen('transferComplete');
+    
+    // Update home screen data
+    displayCards();
+    displayRecentTransfers();
+}
+
+function downloadReceipt() {
+    // Simulate receipt download
+    showNotification('Receipt downloaded successfully', 'success');
+    
+    // In a real app, this would generate and download a PDF receipt
+    const receiptData = {
+        transactionId: document.getElementById('successTransactionId').textContent,
+        amount: transferData.amount,
+        fee: transferData.fee,
+        recipient: transferData.toCard.holder,
+        date: new Date().toLocaleString(),
+        fromCard: maskCardNumber(selectedFromCard.number),
+        toCard: maskCardNumber(transferData.toCard.number)
+    };
+    
+    console.log('Receipt data:', receiptData);
+}
+
+function sendAgain() {
+    // Pre-fill the transfer form with the same recipient
+    document.getElementById('recipientCard').value = formatCardNumber(transferData.toCard.number);
+    document.getElementById('transferAmount').value = '';
+    
+    // Trigger recipient lookup
+    handleRecipientInput(document.getElementById('recipientCard'));
+    
+    showScreen('transferScreen');
+}
+
+function goHome() {
+    showScreen('homeScreen');
+    
+    // Reset transfer data
+    transferData = {};
+    selectedFromCard = null;
+    confirmTransferPin = '';
 }
 
 function loadUserTransactions() {
@@ -650,10 +1603,10 @@ function switchTab(tab) {
     // Handle tab switching logic
     switch(tab) {
         case 'home':
-            // Already on home screen
+            showScreen('homeScreen');
             break;
         case 'transfers':
-            showNotification('Transfers feature will be available soon', 'info');
+            sendMoney();
             break;
         case 'history':
             showNotification('History feature will be available soon', 'info');
@@ -702,10 +1655,34 @@ function setupInputFormatting() {
     if (phoneInput) {
         phoneInput.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                value = `(${value.substring(0, 2)}) ${value.substring(2, 5)}-${value.substring(5, 9)}`;
+            let formattedValue = '';
+            
+            if (value.length > 0) {
+                if (value.length <= 2) {
+                    formattedValue = `(${value}`;
+                } else if (value.length <= 5) {
+                    formattedValue = `(${value.substring(0, 2)}) ${value.substring(2)}`;
+                } else {
+                    formattedValue = `(${value.substring(0, 2)}) ${value.substring(2, 5)}-${value.substring(5, 9)}`;
+                }
             }
-            e.target.value = value;
+            
+            e.target.value = formattedValue;
+        });
+        
+        // Handle backspace properly
+        phoneInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace') {
+                const value = e.target.value;
+                const cursorPos = e.target.selectionStart;
+                
+                // If cursor is at a formatting character, move it back
+                if (cursorPos > 0 && ['(', ')', ' ', '-'].includes(value[cursorPos - 1])) {
+                    setTimeout(() => {
+                        e.target.setSelectionRange(cursorPos - 1, cursorPos - 1);
+                    }, 0);
+                }
+            }
         });
     }
     
