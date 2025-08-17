@@ -8,10 +8,21 @@ if (tg) {
 // Global state
 let currentPin = '';
 let confirmPin = '';
+let firstPin = '';
 let userPhone = '';
 let currentLanguage = 'ru';
+let selectedCountry = 'uz';
+let selectedCountryCode = '+998';
 let otpTimer = null;
 let sessionTimeout = null;
+
+// Country data
+const countries = {
+    uz: { code: '+998', flag: '🇺🇿', mask: '00 000 00 00' },
+    kz: { code: '+7', flag: '🇰🇿', mask: '000 000 00 00' },
+    ru: { code: '+7', flag: '🇷🇺', mask: '000 000 00 00' },
+    us: { code: '+1', flag: '🇺🇸', mask: '000 000 0000' }
+};
 
 // Translations
 const translations = {
@@ -44,7 +55,11 @@ const translations = {
         pin_mismatch: 'PIN коды не совпадают. Попробуйте еще раз.',
         invalid_phone: 'Пожалуйста, введите действительный номер телефона',
         invalid_otp: 'Неверный код. Попробуйте еще раз.',
-        wrong_pin: 'Неверный PIN. Попробуйте еще раз.'
+        wrong_pin: 'Неверный PIN. Попробуйте еще раз.',
+        uzbekistan: 'Узбекистан',
+        kazakhstan: 'Казахстан',
+        russia: 'Россия',
+        usa: 'США'
     },
     uz: {
         create_account: 'Hisob yaratish',
@@ -75,7 +90,11 @@ const translations = {
         pin_mismatch: 'PIN kodlar mos kelmaydi. Qaytadan urinib ko\'ring.',
         invalid_phone: 'Iltimos, to\'g\'ri telefon raqamini kiriting',
         invalid_otp: 'Noto\'g\'ri kod. Qaytadan urinib ko\'ring.',
-        wrong_pin: 'Noto\'g\'ri PIN. Qaytadan urinib ko\'ring.'
+        wrong_pin: 'Noto\'g\'ri PIN. Qaytadan urinib ko\'ring.',
+        uzbekistan: 'O\'zbekiston',
+        kazakhstan: 'Qozog\'iston',
+        russia: 'Rossiya',
+        usa: 'AQSH'
     },
     en: {
         create_account: 'Create Account',
@@ -106,7 +125,11 @@ const translations = {
         pin_mismatch: 'PIN codes don\'t match. Please try again.',
         invalid_phone: 'Please enter a valid phone number',
         invalid_otp: 'Invalid code. Please try again.',
-        wrong_pin: 'Wrong PIN. Please try again.'
+        wrong_pin: 'Wrong PIN. Please try again.',
+        uzbekistan: 'Uzbekistan',
+        kazakhstan: 'Kazakhstan',
+        russia: 'Russia',
+        usa: 'USA'
     },
     kz: {
         create_account: 'Есептік жазба құру',
@@ -137,7 +160,11 @@ const translations = {
         pin_mismatch: 'PIN кодтар сәйкес келмейді. Қайталап көріңіз.',
         invalid_phone: 'Дұрыс телефон нөмірін енгізіңіз',
         invalid_otp: 'Жарамсыз код. Қайталап көріңіз.',
-        wrong_pin: 'Қате PIN. Қайталап көріңіз.'
+        wrong_pin: 'Қате PIN. Қайталап көріңіз.',
+        uzbekistan: 'Өзбекстан',
+        kazakhstan: 'Қазақстан',
+        russia: 'Ресей',
+        usa: 'АҚШ'
     }
 };
 
@@ -147,6 +174,11 @@ function showScreen(screenId) {
         screen.classList.add('hidden');
     });
     document.getElementById(screenId).classList.remove('hidden');
+    
+    // Setup keypad when PIN screens are shown
+    if (['set-pin', 'confirm-pin', 'login-pin'].includes(screenId)) {
+        setTimeout(() => setupPinKeypad(screenId), 100);
+    }
 }
 
 function showError(message) {
@@ -167,25 +199,61 @@ function translatePage() {
     });
 }
 
-function formatPhoneNumber(value) {
+function formatPhoneNumber(value, countryCode) {
     // Remove all non-digits
     const digits = value.replace(/\D/g, '');
     
-    // Format based on length
-    if (digits.length <= 3) {
-        return digits;
-    } else if (digits.length <= 6) {
-        return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    } else if (digits.length <= 10) {
-        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-    } else {
-        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+    // Format based on country
+    switch(countryCode) {
+        case '+998': // Uzbekistan
+            if (digits.length <= 2) return digits;
+            if (digits.length <= 5) return `${digits.slice(0, 2)} ${digits.slice(2)}`;
+            if (digits.length <= 7) return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`;
+            return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7, 9)}`;
+        
+        case '+7': // Kazakhstan/Russia
+            if (digits.length <= 3) return digits;
+            if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+            if (digits.length <= 8) return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+            return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 8)} ${digits.slice(8, 10)}`;
+        
+        case '+1': // USA
+            if (digits.length <= 3) return digits;
+            if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+            return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 10)}`;
+        
+        default:
+            return digits;
     }
 }
 
-function validatePhoneNumber(phone) {
+function validatePhoneNumber(phone, countryCode) {
     const digits = phone.replace(/\D/g, '');
-    return digits.length >= 10;
+    
+    switch(countryCode) {
+        case '+998': return digits.length === 9; // Uzbekistan
+        case '+7': return digits.length === 10;   // Kazakhstan/Russia
+        case '+1': return digits.length === 10;   // USA
+        default: return digits.length >= 9;
+    }
+}
+
+function updateCountrySelector(countryKey) {
+    selectedCountry = countryKey;
+    selectedCountryCode = countries[countryKey].code;
+    
+    const selectedFlag = document.getElementById('selected-flag');
+    const selectedCode = document.getElementById('selected-code');
+    const phoneInput = document.getElementById('phone-input');
+    
+    selectedFlag.textContent = countries[countryKey].flag;
+    selectedCode.textContent = countries[countryKey].code;
+    phoneInput.placeholder = countries[countryKey].mask;
+    phoneInput.value = ''; // Clear input when country changes
+    
+    // Update next button state
+    const nextBtn = document.getElementById('phone-next-btn');
+    nextBtn.classList.add('disabled');
 }
 
 function startOtpTimer() {
@@ -264,8 +332,16 @@ function initializeApp() {
         else if (currentLanguage === 'kk') currentLanguage = 'kz';
         else if (currentLanguage === 'en') currentLanguage = 'en';
         else currentLanguage = 'ru';
+        
+        // Set default country based on language
+        if (currentLanguage === 'uz') selectedCountry = 'uz';
+        else if (currentLanguage === 'kz') selectedCountry = 'kz';
+        else if (currentLanguage === 'ru') selectedCountry = 'ru';
+        else selectedCountry = 'us';
     }
     
+    // Initialize country selector
+    updateCountrySelector(selectedCountry);
     translatePage();
     
     // Check if user is already registered
@@ -279,15 +355,57 @@ function initializeApp() {
     }
     
     showScreen('phone-registration');
+{   const userData = localStorage.getItem('minibank_user');
+    if (userData) {
+        const user = JSON.parse(userData);
+        if (user.isRegistered) {
+            showScreen('login-pin');
+            return;
+        }
+    }
+    
+    showScreen('phone-registration');
 }
 
 // Phone Registration Screen
+document.getElementById('country-selector').addEventListener('click', function() {
+    const dropdown = document.getElementById('country-dropdown');
+    const selector = this;
+    
+    dropdown.classList.toggle('hidden');
+    selector.classList.toggle('active');
+});
+
+// Country dropdown selection
+document.getElementById('country-dropdown').addEventListener('click', function(e) {
+    const option = e.target.closest('.country-option');
+    if (option) {
+        const countryKey = option.getAttribute('data-country');
+        updateCountrySelector(countryKey);
+        
+        // Hide dropdown
+        this.classList.add('hidden');
+        document.getElementById('country-selector').classList.remove('active');
+    }
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const selector = document.getElementById('country-selector');
+    const dropdown = document.getElementById('country-dropdown');
+    
+    if (!selector.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+        selector.classList.remove('active');
+    }
+});
+
 document.getElementById('phone-input').addEventListener('input', function(e) {
-    const formatted = formatPhoneNumber(e.target.value);
+    const formatted = formatPhoneNumber(e.target.value, selectedCountryCode);
     e.target.value = formatted;
     
     const nextBtn = document.getElementById('phone-next-btn');
-    if (validatePhoneNumber(formatted)) {
+    if (validatePhoneNumber(formatted, selectedCountryCode)) {
         nextBtn.classList.remove('disabled');
     } else {
         nextBtn.classList.add('disabled');
@@ -298,12 +416,12 @@ document.getElementById('phone-next-btn').addEventListener('click', function() {
     if (this.classList.contains('disabled')) return;
     
     const phone = document.getElementById('phone-input').value;
-    if (!validatePhoneNumber(phone)) {
+    if (!validatePhoneNumber(phone, selectedCountryCode)) {
         showError(translations[currentLanguage].invalid_phone);
         return;
     }
     
-    userPhone = phone;
+    userPhone = selectedCountryCode + phone.replace(/\D/g, '');
     showScreen('otp-verification');
     startOtpTimer();
 });
@@ -381,38 +499,125 @@ document.getElementById('pin-back-btn').addEventListener('click', function() {
 });
 
 // PIN Keypad handling
-function setupPinKeypad(screenPrefix) {
-    const keypadButtons = document.querySelectorAll(`#${screenPrefix} .key-btn`);
-    const deleteBtn = document.getElementById(`${screenPrefix}-delete`);
-    const continueBtn = document.getElementById(`${screenPrefix}-continue-btn`) || 
-                       document.getElementById(`${screenPrefix}-btn`);
+function setupPinKeypad(screenId) {
+    const screen = document.getElementById(screenId);
+    const keypadButtons = screen.querySelectorAll('.key-btn:not(.empty):not(.delete-btn)');
+    const deleteBtn = screen.querySelector('.delete-btn');
+    const continueBtn = screen.querySelector('.primary-btn');
     
+    let screenPin = '';
+    
+    // Clear any existing event listeners by cloning elements
     keypadButtons.forEach(btn => {
-        if (!btn.classList.contains('empty') && !btn.classList.contains('delete-btn')) {
-            btn.addEventListener('click', function() {
-                const key = this.getAttribute('data-key');
-                if (key && currentPin.length < 4) {
-                    currentPin += key;
-                    updatePinDisplay(currentPin, `#${screenPrefix} .pin-display`);
-                    
-                    if (currentPin.length === 4 && continueBtn) {
-                        continueBtn.classList.remove('disabled');
-                    }
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        newBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const key = this.getAttribute('data-key');
+            if (key && screenPin.length < 4) {
+                screenPin += key;
+                updatePinDisplay(screenPin, `#${screenId} .pin-display`);
+                
+                if (screenPin.length === 4 && continueBtn) {
+                    continueBtn.classList.remove('disabled');
                 }
-            });
-        }
+            }
+        });
     });
     
     if (deleteBtn) {
-        deleteBtn.addEventListener('click', function() {
-            if (currentPin.length > 0) {
-                currentPin = currentPin.slice(0, -1);
-                updatePinDisplay(currentPin, `#${screenPrefix} .pin-display`);
+        const newDeleteBtn = deleteBtn.cloneNode(true);
+        deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
+        
+        newDeleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (screenPin.length > 0) {
+                screenPin = screenPin.slice(0, -1);
+                updatePinDisplay(screenPin, `#${screenId} .pin-display`);
                 
                 if (continueBtn) {
                     continueBtn.classList.add('disabled');
                 }
             }
+        });
+    }
+    
+    // Handle continue button
+    if (continueBtn) {
+        const newContinueBtn = continueBtn.cloneNode(true);
+        continueBtn.parentNode.replaceChild(newContinueBtn, continueBtn);
+        
+        newContinueBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (this.classList.contains('disabled') || screenPin.length !== 4) return;
+            
+            if (screenId === 'set-pin') {
+                firstPin = screenPin;
+                screenPin = '';
+                clearPinDisplay();
+                showScreen('confirm-pin');
+                setupPinKeypad('confirm-pin');
+                
+            } else if (screenId === 'confirm-pin') {
+                if (screenPin === firstPin) {
+                    // Save user data
+                    const userData = {
+                        phone: userPhone,
+                        pin: screenPin,
+                        isRegistered: true,
+                        language: currentLanguage,
+                        registeredAt: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('minibank_user', JSON.stringify(userData));
+                    
+                    screenPin = '';
+                    firstPin = '';
+                    clearPinDisplay();
+                    showScreen('login-pin');
+                    setupPinKeypad('login-pin');
+                } else {
+                    showError(translations[currentLanguage].pin_mismatch);
+                    showPinError();
+                    screenPin = '';
+                    clearPinDisplay();
+                    this.classList.add('disabled');
+                }
+            }
+        });
+    }
+    
+    // For login screen, handle automatic verification
+    if (screenId === 'login-pin') {
+        const originalHandler = function() {
+            if (screenPin.length === 4) {
+                const userData = JSON.parse(localStorage.getItem('minibank_user') || '{}');
+                
+                setTimeout(() => {
+                    if (screenPin === userData.pin) {
+                        screenPin = '';
+                        clearPinDisplay();
+                        alert(translations[currentLanguage].ok + '! Login successful');
+                        resetSessionTimeout();
+                    } else {
+                        showError(translations[currentLanguage].wrong_pin);
+                        showPinError();
+                        screenPin = '';
+                        clearPinDisplay();
+                    }
+                }, 500);
+            }
+        };
+        
+        // Override keypad behavior for login
+        keypadButtons.forEach(btn => {
+            btn.addEventListener('click', originalHandler);
         });
     }
 }
@@ -472,58 +677,9 @@ document.getElementById('confirm-pin-btn').addEventListener('click', function() 
 });
 
 // Login PIN Screen
-setupPinKeypad('login-pin');
-
 document.getElementById('login-pin').addEventListener('click', function() {
     // Auto-focus for PIN entry, reset session timeout
     resetSessionTimeout();
-});
-
-// Handle login PIN verification
-document.addEventListener('click', function(e) {
-    if (e.target.closest('#login-pin .key-btn') && !e.target.classList.contains('empty')) {
-        const key = e.target.getAttribute('data-key');
-        if (key && currentPin.length < 4) {
-            currentPin += key;
-            updatePinDisplay(currentPin, '#login-pin .pin-display');
-            
-            if (currentPin.length === 4) {
-                // Verify PIN
-                const userData = JSON.parse(localStorage.getItem('minibank_user') || '{}');
-                
-                setTimeout(() => {
-                    if (currentPin === userData.pin) {
-                        // Successful login
-                        currentPin = '';
-                        clearPinDisplay();
-                        
-                        // Here you would navigate to the main app
-                        // For now, we'll show a success message
-                        alert(translations[currentLanguage].ok + '! ' + 'Login successful');
-                        
-                        // Reset session timeout
-                        resetSessionTimeout();
-                        
-                        // In the next phases, this would go to the home screen
-                    } else {
-                        // Wrong PIN
-                        showError(translations[currentLanguage].wrong_pin);
-                        showPinError();
-                        currentPin = '';
-                        clearPinDisplay();
-                    }
-                }, 500); // Small delay for better UX
-            }
-        }
-    }
-});
-
-// Delete button for login PIN
-document.getElementById('login-pin-delete').addEventListener('click', function() {
-    if (currentPin.length > 0) {
-        currentPin = currentPin.slice(0, -1);
-        updatePinDisplay(currentPin, '#login-pin .pin-display');
-    }
 });
 
 // Biometric login (placeholder)
@@ -537,7 +693,7 @@ document.getElementById('forgot-pin').addEventListener('click', function() {
     // Reset user data and go back to phone registration
     localStorage.removeItem('minibank_user');
     currentPin = '';
-    confirmPin = '';
+    firstPin = '';
     userPhone = '';
     clearPinDisplay();
     
@@ -691,4 +847,4 @@ window.miniBankApp = {
     translatePage,
     toggleTheme,
     resetSessionTimeout
-};
+};}
