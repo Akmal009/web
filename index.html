@@ -29,8 +29,37 @@
                 <div class="input-group">
                     <label class="input-label" data-translate="phone_number">Phone Number</label>
                     <div class="phone-input">
-                        <span class="country-code">+</span>
-                        <input type="tel" id="phone-input" placeholder="(000) 000-0000" maxlength="15">
+                        <div class="country-selector" id="country-selector">
+                            <img class="country-flag" id="selected-flag" src="" alt="">
+                            <span class="country-code" id="selected-code">+998</span>
+                            <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                <path d="M6 9l6 6 6-6" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <input type="tel" id="phone-input" placeholder="00 000 00 00" maxlength="15">
+                    </div>
+                    
+                    <div class="country-dropdown hidden" id="country-dropdown">
+                        <div class="country-option" data-code="+998" data-country="uz" data-flag="🇺🇿">
+                            <span class="flag">🇺🇿</span>
+                            <span class="country-name" data-translate="uzbekistan">Uzbekistan</span>
+                            <span class="code">+998</span>
+                        </div>
+                        <div class="country-option" data-code="+7" data-country="kz" data-flag="🇰🇿">
+                            <span class="flag">🇰🇿</span>
+                            <span class="country-name" data-translate="kazakhstan">Kazakhstan</span>
+                            <span class="code">+7</span>
+                        </div>
+                        <div class="country-option" data-code="+7" data-country="ru" data-flag="🇷🇺">
+                            <span class="flag">🇷🇺</span>
+                            <span class="country-name" data-translate="russia">Russia</span>
+                            <span class="code">+7</span>
+                        </div>
+                        <div class="country-option" data-code="+1" data-country="us" data-flag="🇺🇸">
+                            <span class="flag">🇺🇸</span>
+                            <span class="country-name" data-translate="usa">USA</span>
+                            <span class="code">+1</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -131,8 +160,9 @@
                     <button class="key-btn empty"></button>
                     <button class="key-btn" data-key="0">0</button>
                     <button class="key-btn delete-btn" id="pin-delete">
-                        <svg width="20" height="16" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 7l6 6M9 13l6-6" stroke="#333" stroke-width="2"/>
+                        <svg width="24" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" stroke="#666" stroke-width="2.5" stroke-linejoin="round"/>
+                            <path d="m13 9 4 4m0-4-4 4" stroke="#666" stroke-width="2.5" stroke-linecap="round"/>
                         </svg>
                     </button>
                 </div>
@@ -182,8 +212,9 @@
                     <button class="key-btn empty"></button>
                     <button class="key-btn" data-key="0">0</button>
                     <button class="key-btn delete-btn" id="confirm-pin-delete">
-                        <svg width="20" height="16" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 7l6 6M9 13l6-6" stroke="#333" stroke-width="2"/>
+                        <svg width="24" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" stroke="#666" stroke-width="2.5" stroke-linejoin="round"/>
+                            <path d="m13 9 4 4m0-4-4 4" stroke="#666" stroke-width="2.5" stroke-linecap="round"/>
                         </svg>
                     </button>
                 </div>
@@ -226,8 +257,9 @@
                     <button class="key-btn empty"></button>
                     <button class="key-btn" data-key="0">0</button>
                     <button class="key-btn delete-btn" id="login-pin-delete">
-                        <svg width="20" height="16" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 7l6 6M9 13l6-6" stroke="#333" stroke-width="2"/>
+                        <svg width="24" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" stroke="#666" stroke-width="2.5" stroke-linejoin="round"/>
+                            <path d="m13 9 4 4m0-4-4 4" stroke="#666" stroke-width="2.5" stroke-linecap="round"/>
                         </svg>
                     </button>
                 </div>
