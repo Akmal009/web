@@ -77,10 +77,20 @@ body {
     cursor: pointer;
     border-radius: 50%;
     transition: background-color 0.2s;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .back-btn:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.back-btn svg {
+    stroke: #ffffff !important;
+    stroke-width: 2.5;
 }
 
 /* Logo and Icons */
@@ -126,6 +136,7 @@ body {
 /* Input Styles */
 .input-group {
     margin-bottom: 24px;
+    position: relative;
 }
 
 .input-label {
@@ -144,6 +155,7 @@ body {
     border-radius: 12px;
     padding: 16px;
     transition: border-color 0.2s;
+    position: relative;
 }
 
 .phone-input:focus-within {
@@ -151,10 +163,80 @@ body {
     background: #fff;
 }
 
+.country-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding-right: 12px;
+    border-right: 1px solid #e9ecef;
+    margin-right: 12px;
+    user-select: none;
+}
+
+.country-flag {
+    width: 24px;
+    height: 18px;
+    object-fit: cover;
+    border-radius: 2px;
+}
+
 .country-code {
     font-size: 16px;
     color: #333;
-    margin-right: 8px;
+    font-weight: 500;
+    min-width: 45px;
+}
+
+.dropdown-arrow {
+    transition: transform 0.2s;
+}
+
+.country-selector.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.country-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #4A90E2;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.country-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.country-option:hover {
+    background-color: #f8f9fa;
+}
+
+.country-option .flag {
+    font-size: 20px;
+    width: 24px;
+}
+
+.country-option .country-name {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+}
+
+.country-option .code {
+    font-size: 14px;
+    color: #666;
     font-weight: 500;
 }
 
@@ -189,7 +271,7 @@ body {
 /* OTP Input */
 .otp-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     gap: 12px;
     margin-bottom: 24px;
 }
@@ -204,13 +286,15 @@ body {
     font-weight: 600;
     background: #f8f9fa;
     transition: all 0.2s;
+    outline: none;
+    box-sizing: border-box;
 }
 
 .otp-input:focus {
-    outline: none;
     border-color: #4A90E2;
     background: #fff;
     transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
 }
 
 .otp-input.filled {
@@ -299,6 +383,7 @@ body {
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     margin-bottom: 32px;
+    justify-items: center;
 }
 
 .key-btn {
@@ -315,7 +400,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.key-btn:focus {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .key-btn:hover {
@@ -331,6 +423,7 @@ body {
 .key-btn.empty {
     background: transparent;
     cursor: default;
+    pointer-events: none;
 }
 
 .key-btn.empty:hover {
@@ -343,7 +436,14 @@ body {
 }
 
 .delete-btn:hover {
-    background: #fee !important;
+    background: #ffebee !important;
+}
+
+.delete-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke: #666;
+    stroke-width: 2.5;
 }
 
 /* Buttons */
@@ -525,6 +625,10 @@ body {
     color: #aaa;
 }
 
+.dark-theme .back-btn svg {
+    stroke: #ffffff !important;
+}
+
 .dark-theme .phone-input {
     background: #2d2d2d;
     border-color: #444;
@@ -534,6 +638,31 @@ body {
 .dark-theme .phone-input:focus-within {
     border-color: #4A90E2;
     background: #333;
+}
+
+.dark-theme .country-code {
+    color: #fff;
+}
+
+.dark-theme .country-dropdown {
+    background: #2d2d2d;
+    border-color: #4A90E2;
+}
+
+.dark-theme .country-option {
+    color: #fff;
+}
+
+.dark-theme .country-option:hover {
+    background-color: #444;
+}
+
+.dark-theme .country-option .country-name {
+    color: #fff;
+}
+
+.dark-theme .country-option .code {
+    color: #aaa;
 }
 
 .dark-theme #phone-input {
@@ -566,6 +695,10 @@ body {
 
 .dark-theme .key-btn:active {
     background: #555;
+}
+
+.dark-theme .delete-btn svg {
+    stroke: #aaa;
 }
 
 .dark-theme .info-message {
